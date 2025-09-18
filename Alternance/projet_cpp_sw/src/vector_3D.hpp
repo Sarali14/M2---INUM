@@ -28,7 +28,6 @@ inline T& operator()(std::size_t i, std::size_t j, std::size_t k) { return data_
   inline const T& operator()(std::size_t i, std::size_t j, std::size_t k) const { return data_[index(i,j,k)]; }
 
 // --- Utilities ---
-void fill(const T& v) { std::fill(data_.begin(), data_.end(), v); }
 std::size_t size_flat() const { return data_.size(); }
 const Grid3D& grid() const { return G_; }
 std::size_t strideJ() const { return strideJ_; } // stride when j increments by 1
@@ -37,9 +36,7 @@ T* data() { return data_.data(); }
 const T* data() const { return data_.data(); }
 
 private:
-inline static void ensure3(std::initializer_list<std::size_t> idx){
-if (idx.size()!=3) throw std::out_of_range("Array3D: expecting 3 indices"); 
-}
+
 inline std::size_t index(std::size_t i, std::size_t j, std::size_t k) const {
 #ifdef S3D_BOUNDS_CHECK
 if (i>=G_.NI || j>=G_.NJ || k>=G_.NK) throw std::out_of_range("Array3D: index out of range");

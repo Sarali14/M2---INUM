@@ -5,22 +5,20 @@
 #include<initializer_list>
 
 
-struct Point2D {
-  double x,y;
-  Point2D (double abs, double ord): x(abs), y(ord){}
+struct Grid2D {
+  std::size_t Ni , Nj ;
 };
 
 template <typename T>
 class Array2D{
 private:
-  std::size_t _Nx;
-  std::size_t _Ny;
+  Grid2D G_{};
   std::size_t _Stride_i;
   std::vector<T> _data;
   
 public:
-  Array2D(std::size_t x, std::size_t y) :
-    _Nx(x), _Ny(y), _Stride_i(y), _data(x*y) {}
+  Array2D(const Grid2D& g) :
+    _G(g), _Stride_i(g.Nj), _data(g.Ni * g.Nj) {}
 
   ~Array2D() {}
 
@@ -30,12 +28,11 @@ public:
   std::size_t strideI() const { return _Stride_i; } 
   T* data() { return _data.data(); }
   const T* data() const { return _data.data(); }
-  const std::size_t get_Nx() const { return _Nx ;}
-  const std::size_t get_Ny() const { return _Ny ;}
-  const std::size_t get_nb_points() const { return _Nx*_Ny ;}
+  const Grid2D& grid() const { return _G ;}
+  const std::size_t size_flat() const { return _data.size() ;}
 
   std::size_t index(std::size_t i, std::size_t j) const {
-  #ifdef S3D_BOUNDS_CHECK
+  #ifdef S2D_BOUNDS_CHECK
   if (i>=_Nx || j>=_Ny) throw std::out_of_range("Array2D: index out of range");
   #endif
   return i*_Stride_i + j;
