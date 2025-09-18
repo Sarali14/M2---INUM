@@ -1,7 +1,6 @@
 // g++ -O2 -std=c++17 -DS3D_BOUNDS_CHECK simple3d.hpp -o demo && ./demo
 
-#ifndef SIMPLE3D_HPP
-#define SIMPLE3D_HPP
+#pragma once
 
 #include <vector>
 #include <cstddef>
@@ -9,8 +8,6 @@
 #include <stdexcept>
 #include <algorithm>
 #include <iostream>
-
-namespace s3d {
 
 // Base geometry
 struct Grid3D {
@@ -28,19 +25,7 @@ explicit Array3D(const Grid3D& g)
 
 // --- Element access (bounds check optional via S3D_BOUNDS_CHECK) ---
 inline T& operator()(std::size_t i, std::size_t j, std::size_t k) { return data_[index(i,j,k)]; }
-inline const T& operator()(std::size_t i, std::size_t j, std::size_t k) const { return data_[index(i,j,k)]; }
-
-// A[{i,j,k}]
-inline T& operator[](std::initializer_list<std::size_t> idx){
-ensure3(idx);
-auto it = idx.begin();
-return (*this)(*it, *(it+1), *(it+2));// call the operator()
-}
-inline const T& operator[](std::initializer_list<std::size_t> idx) const{
-ensure3(idx);
-auto it = idx.begin();
-return (*this)(*it, *(it+1), *(it+2));
-}
+  inline const T& operator()(std::size_t i, std::size_t j, std::size_t k) const { return data_[index(i,j,k)]; }
 
 // --- Utilities ---
 void fill(const T& v) { std::fill(data_.begin(), data_.end(), v); }
@@ -66,43 +51,3 @@ Grid3D G_{};
 std::size_t strideJ_{0}, strideI_{0}; // K fastest
 std::vector<T> data_;
 };
-
-} // namespace s3d
-
-#endif // SIMPLE3D_HPP
-
-
-// -------------------- Demo (optional) --------------------
-
-#include <numeric>
-#include <complex>
-
-using cplx = std::complex<double>;
-
-int main(){
-using namespace s3d;
-Grid3D G{128,96,160};
-Array3D<double> A(G);
-
-// Fill with i*1e6 + j*1e3 + k for debugging
-for (std::size_t i=0;i<G.NI;++i)
-for (std::size_t j=0;j<G.NJ;++j)
-for (std::size_t k=0;k<G.NK;++k)
-A(i,j,k) = i*1e6 + j*1e3 + k;
-
-// Access examples
-double x1 = A(1,2,3);
-double x2 = A[{1,2,3}];
-std::cout << x1 << ", " << x2 << "\n"; // identical
-A(1,2,223) = 3;
-// Compute a simple checksum
-cplx sum = 0;
-for (std::size_t i=0;i<G.NI;++i)
-for (std::size_t j=0;j<G.NJ;++j)
-for (std::size_t k=0;k<G.NK;++k)
-sum += A(i,j,k);
-std::cout << "sum=" << sum << "\n";
-
-std::cout << "strideJ=" << A.strideJ() << ", strideI=" << A.strideI() << "\n";
-return 0;
-}
