@@ -1,0 +1,77 @@
+#ifndef SAVE_VECTOR_HPP
+#define SAVE_VECTOR_HPP
+
+#include <fstream>
+#include <vector>
+#include <string>
+#include <stdexcept>
+#include "vector_2D.cpp"
+
+/**
+ * @brief Saves a std::vector to a binary file.
+ *
+ * This function first writes the number of elements in the vector,
+ * and then writes the raw data of the vector to the specified binary file.
+ *
+ * @tparam T The type of the elements in the vector.
+ * @param filename The name of the file to save the vector to.
+ * @param vec The vector to be saved.
+ * @return true if the vector is saved successfully, false otherwise.
+ */
+template<typename T>
+bool save_vector_to_binary(const std::string& filename, const std::vector<T>& vec) {
+    // Open the file in binary mode and overwrite any existing content.
+    std::ofstream out(filename, std::ios::binary | std::ios::trunc);
+
+    if (!out.is_open()) {
+        return false;
+    }
+
+    // First, write the number of elements in the vector.
+    typename std::vector<T>::size_type size = vec.size();
+    out.write(reinterpret_cast<const char*>(&size), sizeof(size));
+
+    // Then, write the raw data of the vector. [8]
+    out.write(reinterpret_cast<const char*>(vec.data()), size * sizeof(T));
+
+    out.close();
+
+    return true;
+}
+
+/**
+ * @brief Saves an Array2D object to a binary file.
+ *
+ * This function first writes the dimensions (Nx and Ny) of the array,
+ * and then writes the raw, contiguous data of the array to the file.
+ *
+ * @tparam T The type of the elements in the Array2D.
+ * @param filename The name of the file to save the array to.
+ * @param arr The Array2D object to be saved.
+ * @return true if the array is saved successfully, false otherwise.
+ */
+template<typename T>
+bool save_vector_to_binary(const std::string& filename, const Array2D<T>& arr) {
+    // Open the file in binary mode and overwrite any existing content.
+    std::ofstream out(filename, std::ios::binary | std::ios::trunc);
+
+    if (!out.is_open()) {
+        return false;
+    }
+
+    // First, write the dimensions (Nx and Ny) to the file.
+    std::size_t nx = arr.get_Nx();
+    std::size_t ny = arr.get_Ny();
+    out.write(reinterpret_cast<const char*>(&nx), sizeof(nx));
+    out.write(reinterpret_cast<const char*>(&ny), sizeof(ny));
+
+    // Then, write the raw data of the array.
+    out.write(reinterpret_cast<const char*>(arr.data()), arr.get_nb_points() * sizeof(T));
+
+    out.close();
+
+    // Check if the write operations were successful.
+    return out.good();
+}
+
+#endif
