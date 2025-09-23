@@ -3,13 +3,13 @@
 #include <iostream>
 #include <cmath>
 #include <vector>
+#include <fftw3.h>
 #include "vector_3D.hpp"
 
 struct domaine_size{
   double Lx{}, Ly{} , Lz{};
 };
 
-template <typename T>
 struct step_size{
   double hi, hj , hk;
   step_size(const Grid3D& g, const domain_size& L):
@@ -52,7 +52,7 @@ public:
   virtual void second_der_z() = 0;
 
   template <typename Func>
-  virtual void laplacien(Func f) override {
+  virtual void laplacien(Func f){
     if(!_dx_computed) second_der_x(f);
     if(!_dy_computed) second_der_y(f);
     if(!_dz_computed) second_der_z(f);
@@ -70,12 +70,12 @@ public:
 template <typename T>
 class DF_o2 : public derivative_3D<T>{
 public:
-  using derivative<T>::_h;
-  using derivative<T>::_G;
-  using derivative<T>::_dx;
-  using derivative<T>::_dy;
-  using derivative<T>::_dz;
-  using derivative<T>::_delta;
+  using derivative_3D<T>::_h;
+  using derivative_3D<T>::_G;
+  using derivative_3D<T>::_dx;
+  using derivative_3D<T>::_dy;
+  using derivative_3D<T>::_dz;
+  using derivative_3D<T>::_delta;
   
   DF_o2(const step_size& h , const Gride3D& g) : derivative_3D<T>(h, g) {}
 
@@ -123,12 +123,12 @@ public:
 template <typename T>
 class DF_o4 : public derivative_3D<T>{
 public:
-  using derivative<T>::_h;
-  using derivative<T>::_G;
-  using derivative<T>::_dx;
-  using derivative<T>::_dy;
-  using derivative<T>::_dz;
-  using derivative<T>::_delta;
+  using derivative_3D<T>::_h;
+  using derivative_3D<T>::_G;
+  using derivative_3D<T>::_dx;
+  using derivative_3D<T>::_dy;
+  using derivative_3D<T>::_dz;
+  using derivative_3D<T>::_delta;
   
   DF_o4(const step_size& h , const Gride3D& g) : derivative_3D<T>(h, g) {}
 
@@ -183,3 +183,40 @@ public:
 };
 
 
+template <typename T>
+class spectral : public derivative_3D<T>{
+private:
+  std::vector<T> kx,ky,kz;
+public:
+  using derivative<T>::_h;
+  using derivative<T>::_G;
+  using derivative<T>::_dx;
+  using derivative<T>::_dy;
+  using derivative<T>::_dz;
+  using derivative<T>::_delta;
+  
+
+  spectral(const step_size& h , const Gride3D& g) : derivative_3D<T>(h, g)
+    , kx(g.NI),ky(g.NJ), kz(g.NK) {}
+
+  template <typename Func>
+  void second_der_x(Func f) override{
+    double *in;
+    fftw_complex *out;
+        in  = (double*) fftw_malloc(sizeof(double) * (_G.NI * _G.NJ * _G.NK));
+    out = (fftw_complex*) fftw_malloc(sizeof(fftw_complex) * ((_G.NI * _G.NJ * _G.NK)
+							      /2 + 1));
+    for (std::size_t i=0; i<_G.NI ; ++i){
+      for (std::size_t j=0; j<_G.NJ; ++j){
+	for (std::size_t k=0; k<_G.NK; ++k){
+	  in[i*(_G.NJ * _G.NK) + j*(_G.NK) + k ] = f(i,j,k);
+	  
+	}
+      }
+    }
+    
+    fftw_plan plan = fftw_plan_dft_r2c_1d((_G.NI*_G.NJ*_G.NK), in, out, FFTW_ESTIMATE);
+    fftw_execute(plan);
+    for (std::size_t l=0; l<(_G.NI * _G.NJ * _G.NK)/2 + 1 ; ++l){
+      
+      
