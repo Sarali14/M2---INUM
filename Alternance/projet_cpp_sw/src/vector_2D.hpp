@@ -12,7 +12,7 @@ struct Grid2D {
 template <typename T>
 class Array2D{
 private:
-  Grid2D G_{};
+  Grid2D _G{};
   std::size_t _Stride_i;
   std::vector<T> _data;
   

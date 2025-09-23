@@ -6,6 +6,7 @@
 #include <string>
 #include <stdexcept>
 #include "vector_2D.hpp"
+#include "vector_3D.hpp"
 
 /**
  * @brief Saves a std::vector to a binary file.
@@ -67,6 +68,30 @@ bool save_vector_to_binary(const std::string& filename, const Array2D<T>& arr) {
 
     // Then, write the raw data of the array.
     out.write(reinterpret_cast<const char*>(arr.data()), arr.get_nb_points() * sizeof(T));
+
+    out.close();
+
+    // Check if the write operations were successful.
+    return out.good();
+}
+
+template<typename T>
+bool save_vector_to_binary(const std::string& filename, const Array3D<T>& arr) {
+    // Open the file in binary mode and overwrite any existing content.
+    std::ofstream out(filename, std::ios::binary | std::ios::trunc);
+
+    if (!out.is_open()) {
+        return false;
+    }
+
+    // First, write the dimensions (NI, NJ, NK) from the grid to the file.
+    const Grid3D& grid = arr.grid();
+    out.write(reinterpret_cast<const char*>(&grid.NI), sizeof(grid.NI));
+    out.write(reinterpret_cast<const char*>(&grid.NJ), sizeof(grid.NJ));
+    out.write(reinterpret_cast<const char*>(&grid.NK), sizeof(grid.NK));
+
+    // Then, write the raw, contiguous data of the array in a single block.
+    out.write(reinterpret_cast<const char*>(arr.data()), arr.size_flat() * sizeof(T));
 
     out.close();
 
