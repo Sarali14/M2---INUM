@@ -1,0 +1,200 @@
+#pragma once
+
+#include<iostream>
+#include<cmath>
+#include<vector>
+#include "vector_2D.hpp"
+
+template <typename T>
+class DF2D{
+
+protected:
+  double _h;
+  double _k;
+  std::size_t _Nx;
+  std::size_t _Ny;
+  Array2D<T> _f;
+  Array2D<T> _dx;
+  Array2D<T> _dy;
+  Array2D<T> _delta;
+
+public:
+  DF2D(double& h,double& k, std::size_t Nx, std::size_t Ny)
+    :_h(h), _k(k), _Nx(Nx), _Ny(Ny),
+     _f(Nx , Ny),_dx(Nx , Ny),_dy(Nx ,Ny), _delta(Nx,Ny)   {}
+  
+  virtual ~DF2D() {}
+
+  inline double x_coord(std::size_t i) const { return i * _h; }
+  inline double y_coord(std::size_t j) const { return j * _k; }
+
+  template <typename Func>
+  void load_f(Func f){
+    for (std::size_t i=0; i < _Nx; ++i){
+      double x = i * _h;
+      for (std::size_t j=0;j < _Ny; ++j){
+	double y = j * _k;
+	  _f(i,j)=f(x,y);
+      }
+    }
+  }
+
+  const Array2D<T>& get_function() const {return _f;}
+  std::size_t get_nb_points() const {return _Nx*_Ny;}
+  const Array2D<T>& get_derivative_x() { return _dx;}
+  const Array2D<T>& get_derivative_y() { return _dy;}
+  const Array2D<T>& get_laplacien() { return _delta;}
+
+  virtual void first_der_x() = 0;
+  virtual void first_der_y() = 0;
+  virtual void second_der_x() = 0;
+  virtual void second_der_y() = 0;
+  virtual void laplacien(const int derivative) = 0; 
+};
+
+template <typename T>
+class DF2D_o2 : public DF2D<T>{
+public:
+  using DF2D<T>::_h;
+  using DF2D<T>::_k;
+  using DF2D<T>::_Nx;
+  using DF2D<T>::_Ny;
+  using DF2D<T>::_f;
+  using DF2D<T>::_dx;
+  using DF2D<T>::_dy;
+  using DF2D<T>::_delta;
+  
+
+  DF2D_o2(double h, double k, std::size_t Nx, std::size_t Ny) : DF2D<T>(h,k, Nx, Ny) {}
+  
+  void first_der_x() override {
+    for (std::size_t i=0; i< _Nx ; ++i){
+      for ( std::size_t j=0; j< _Ny; ++j){
+	std::size_t ip1 = (i + 1) % _Nx;
+	std::size_t im1 = (i + _Nx - 1) % _Nx; 
+	_dx(i,j) = (_f(ip1 ,j) - _f(im1,j)) / (2.0 * _h);
+      }
+    }
+  }
+
+  void first_der_y() override {
+    for (std::size_t i=0; i< _Nx ; ++i){
+      for ( std::size_t j=0; j< _Ny; ++j){
+	std::size_t jp1 = (j + 1) % _Ny;
+	std::size_t jm1 = (j + _Ny - 1) % _Ny;
+        _dy(i,j) = (_f(i,jp1) - _f(i,jm1)) / (2.0 * _k);
+      }
+    }
+  }
+
+  void second_der_x() override {
+    for (std::size_t i=0; i< _Nx ; ++i){
+      for ( std::size_t j=0; j<_Ny; ++j){
+	std::size_t ip1 = (i + 1) % _Nx;
+	std::size_t im1 = (i + _Nx - 1) % _Nx;
+	_dx(i,j) = (_f(ip1,j) - 2.0*_f(i,j) + _f(im1,j)) / std::pow(_h,2.0);
+    }
+  }
+  }
+  void second_der_y() override {
+    for (std::size_t i=0; i< _Nx ; ++i){
+      for ( std::size_t j=0; j<_Ny; ++j){
+	std::size_t jp1 = (j + 1) % _Ny;
+	std::size_t jm1 = (j + _Ny - 1) % _Ny;
+        _dy(i,j) = (_f(i,jp1) - 2.0*_f(i,j) + _f(i,jm1)) / std::pow(_k,2.0);
+    }
+  }
+  }
+  void laplacien(const int derivative) override {
+    if(derivative != 2){
+      throw std::runtime_error("Laplacian is only valid for second derivatives");}
+    else {
+    for (std::size_t i=0; i< _Nx ; ++i){
+      for ( std::size_t j=0; j<_Ny; ++j){
+        _delta(i,j) = _dx(i,j)+_dy(i,j); 
+      }
+    }
+  }
+  }
+};
+
+template <typename T>
+class DF2D_o4 : public DF2D<T>{
+public:
+  using DF2D<T>::_h;
+  using DF2D<T>::_k;
+  using DF2D<T>::_Nx;
+  using DF2D<T>::_Ny;
+  using DF2D<T>::_f;
+  using DF2D<T>::_dx;
+  using DF2D<T>::_dy;
+  using DF2D<T>::_delta;
+
+  DF2D_o4(double h, double k, std::size_t Nx, std::size_t Ny) : DF2D<T>(h,k, Nx, Ny) {}
+  
+  void first_der_x() override {
+    for (std::size_t i=0; i< _Nx ; ++i){
+      for ( std::size_t j=0; i< _Ny; ++j){
+	std::size_t ip1 = (i + 1) % _Nx;
+	std::size_t ip2 = (i+2) % _Nx;
+	std::size_t im1 = (i + _Nx - 1) % _Nx;
+        std::size_t im2 = (i+_Nx-2)%_Nx;
+	_dx(i,j) = (-_f(ip2 ,j) +8.0*_f(ip1 ,j) -8.0*_f(im1 ,j) + _f(im2 ,j))
+	  /(12.0*_h);
+      }
+    }
+  }
+
+  void first_der_y() override {
+    for (std::size_t i=0; i< _Nx ; ++i){
+      for ( std::size_t j=0; i< _Ny; ++j){
+        std::size_t jp1 = (j + 1) % _Ny;
+        std::size_t jp2 = (j+2) % _Ny;
+        std::size_t jm1 = (j + _Ny - 1) % _Ny;
+        std::size_t jm2 = (j+_Ny-2)%_Ny;
+        _dy(i,j) = (-_f(i ,jp2) +8.0*_f(i,jp1) -8.0*_f(i,jm1) + _f(i,jm2))
+          /(12.0*_k);
+      }
+    }
+  }
+
+  void second_der_x() override {
+    for (std::size_t i=0; i< _Nx ; ++i){
+      for ( std::size_t j=0; j<_Ny; ++j){
+	std::size_t ip1 = (i+1)%_Nx;
+	std::size_t ip2 = (i+2)%_Nx;
+	std::size_t im1 = (i+_Nx-1)%_Nx;
+	std::size_t im2 = (i+_Nx-2)%_Nx;
+
+       _dx(i,j) = (-_f(ip2,j) + 16.0*_f(ip1,j) - 30.0*_f(i,j) + 16.0*_f(im1,j)- _f(im2,j))
+		    /(12.0 * std::pow(_h,2.0));
+
+    }
+  }
+  }
+  void second_der_y() override {
+    for (std::size_t i=0; i< _Nx ; ++i){
+      for ( std::size_t j=0; j<_Ny; ++j){
+        std::size_t jp1 = (j+1)%_Ny;
+        std::size_t jp2 = (j+2)%_Ny;
+        std::size_t jm1 = (j+_Nx-1)%_Ny;
+        std::size_t jm2 = (j+_Nx-2)%_Ny;
+
+       _dy(i,j) = (-_f(i,jp2) + 16.0*_f(i,jp1) - 30.0*_f(i,j) + 16.0*_f(i,jm1)- _f(i,jm2))
+	 / (12.0 * std::pow(_k,2.0));
+    }
+  }
+  }
+    void laplacien(const int derivative) override {
+    if(derivative != 2){
+      throw std::runtime_error("Laplacian is only valid for second derivatives");}
+    else {
+    for (std::size_t i=0; i< _Nx ; ++i){
+      for ( std::size_t j=0; j<_Ny; ++j){
+        _delta(i,j) = _dx(i,j)+_dy(i,j);
+      }
+    }
+  }
+  }
+  
+};
