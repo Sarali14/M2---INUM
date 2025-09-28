@@ -30,7 +30,7 @@ int main(int argc, char* argv[]){
      return 1;
   }
 
-  std::cout << "Nx = " << Nx << "Ny = "<< Ny << "Nz = " << Nz << ", method = " << method
+  std::cout << "Nx = " << Nx << ", Ny = "<< Ny << ", Nz = " << Nz << " | method = " << method
 	    << std::endl;
   Grid3D g{Nx,Ny,Nz};
   step_size H={g,L};
@@ -43,7 +43,7 @@ int main(int argc, char* argv[]){
   else if ( method == "DFo4"){
     solver_variant =  DF_o4<double>(H , g);}
   else if (method == "spectral"){
-    solver_variant =  spectral<double>(H, g, L, spectral<double>::Direction::x);}
+    solver_variant =  spectral<double>(H, g, L);}
 
     auto function_wrapper = [&](std::size_t i, std::size_t j, std::size_t k) {
       double x = i * H.hi;
@@ -70,45 +70,7 @@ int main(int argc, char* argv[]){
 
       std::cout << "Vectors successfully saved." << std::endl;}
 
-  }, solver_variant); 
-  /*
+  }, solver_variant);
 
-    auto d_x = solver->get_derivative_x();
-    auto d_y = solver->get_derivative_y();
-    auto d_z = solver->get_derivative_z();
-    auto delta = solver->get_laplacien();
-    
-
-    std::string filename1 = "approx_der_x.bin";
-    std::string filename2 = "approx_der_y.bin";
-    std::string filename3 = "approx_der_z.bin";
-    std::string filename4 = "approx_laplacien.bin";
-    
-    
-    if (save_vector_to_binary(filename1, d_x )) {
-        std::cout << "Vector successfully saved to " << filename1 << std::endl;
-    } else {
-        std::cerr << "Error saving vector to " << filename1 << std::endl;
-    }
-    if (save_vector_to_binary(filename2, d_y)) {
-        std::cout << "Vector successfully saved to " << filename2 << std::endl;
-    } else {
-        std::cerr << "Error saving vector to " << filename2 << std::endl;
-    }
-    if (save_vector_to_binary(filename3, d_z)) {
-        std::cout << "Vector successfully saved to " << filename3 << std::endl;
-    } else {
-        std::cerr << "Error saving vector to " << filename3 << std::endl;
-    }
-    if (save_vector_to_binary(filename4, delta)) {
-	std::cout << "Vector successfully saved to " << filename4 << std::endl;
-    } else {
-	std::cerr << "Error saving vector to " << filename4 << std::endl;
-    }
-
-
-    delete solver;*/
-
-    return 0;
-  
+  return 0;
 }

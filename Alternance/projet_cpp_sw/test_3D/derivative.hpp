@@ -210,11 +210,8 @@ public:
 template <typename T>
 class spectral : public derivative_3D<T,spectral<T>>{
 
-public:
-  enum class Direction{ x , y , z};
 private:
   std::vector<T> kx,ky,kz;
-  Direction direction;
   domain_size L;
 public:
   using derivative_3D<T,spectral<T>>::_h;
@@ -227,77 +224,64 @@ public:
   using derivative_3D<T,spectral<T>>::_dy_computed;
   using derivative_3D<T,spectral<T>>::_dz_computed;
   
-  spectral(const step_size& h , const Grid3D& g,const domain_size D ,Direction dir) :
+  spectral(const step_size& h , const Grid3D& g,const domain_size D) :
     derivative_3D<T,spectral<T>>(h, g)
-    , direction(dir)
     ,L(D) {
     fill_wavenumber_x();
     fill_wavenumber_y();
     fill_wavenumber_z();
   }
 
-  void fill_wavenumber_x() {
-    if (direction == Direction::x){
-      kx.resize((_G.NI)/2 + 1);
-      for (std::size_t i = 0; i <= (_G.NI)/2; ++i)
-	kx[i] = 2.0*M_PI*i / L.Lx;}
-    else{
-      for (std::size_t i = 0; i <= (_G.NI)/2; ++i){
-	kx[i] = 2.0*M_PI*i / L.Lx;}
-      for (std::size_t i = (_G.NI)/2 +1; i<_G.NI ; ++i){
-	kx[i] = -2.0 * M_PI * (_G.NI - i) / L.Lx;}
-    }
-  }
-
-  void fill_wavenumber_y() {
-    if (direction == Direction::y){
-      ky.resize((_G.NJ)/2 + 1);
-      for (std::size_t j = 0; j <= (_G.NJ)/2; ++j)
-        ky[j] = 2.0*M_PI*j / L.Ly;}
-    else{
-      for (std::size_t j = 0; j <= (_G.NJ)/2; ++j){
-        ky[j] = 2.0*M_PI*j / L.Ly;}
-      for (std::size_t j = (_G.NJ)/2 +1; j<_G.NJ ; ++j){
-        ky[j] = -2.0 * M_PI * ( _G.NJ - j) / L.Ly;}
-    }
-  }
-
   void fill_wavenumber_z() {
-    if (direction == Direction::z){
       kz.resize((_G.NK)/2 + 1);
       for (std::size_t k = 0; k <= (_G.NK)/2; ++k)
-        kz[k] = 2.0*M_PI*k / L.Lz;}
-    else{
+      kz[k] = 2.0*M_PI*k / L.Lz;}
+
+  /* void fill_wavenumber_z() {
+    kz.resize(_G.NK);
       for (std::size_t k = 0; k <= (_G.NK)/2; ++k){
         kz[k] = 2.0*M_PI*k / L.Lz;}
       for (std::size_t k = (_G.NK)/2 +1; k<_G.NK ; ++k){
         kz[k] = -2.0 * M_PI * (_G.NK - k) / L.Lz;}
-    }
+	}*/
+
+  void fill_wavenumber_y() {
+    ky.resize(_G.NJ);
+      for (std::size_t j = 0; j <= (_G.NJ)/2; ++j){
+        ky[j] = 2.0*M_PI*j / L.Ly;}
+      for (std::size_t j = (_G.NJ)/2 +1; j<_G.NJ ; ++j){
+        ky[j] = -2.0 * M_PI * ( _G.NJ - j) / L.Ly;}
+  }
+
+  void fill_wavenumber_x() {
+    kx.resize(_G.NI);
+      for (std::size_t i = 0; i <= (_G.NI)/2; ++i){
+        kx[i] = 2.0*M_PI*i / L.Lx;}
+      for (std::size_t i = (_G.NI)/2 +1; i<_G.NI ; ++i){
+        kx[i] = -2.0 * M_PI * (_G.NI - i) / L.Lx;}
   }
 
   template <typename Func>
   void second_der_x_impl(Func f) {
     double *in;
     fftw_complex *out;
-    in  = (double*) fftw_malloc(sizeof(double) * (_G.NI * _G.NJ * _G.NK));
-    out = (fftw_complex*) fftw_malloc(sizeof(fftw_complex) * ((_G.NI * _G.NJ * _G.NK)
-							      /2 + 1));
-    for (std::size_t i=0; i<kx.size() ; ++i){
-      for (std::size_t j=0; j<ky.size(); ++j){
-	for (std::size_t k=0; k<kz.size(); ++k){
+    in  = (double*) fftw_malloc(sizeof(double) * _G.NI * _G.NJ * _G.NK);
+    out = (fftw_complex*) fftw_malloc(sizeof(fftw_complex) * _G.NI * _G.NJ * (_G.NK/2 + 1));
+    for (std::size_t i=0; i<_G.NI ; ++i){
+      for (std::size_t j=0; j<_G.NJ; ++j){
+	for (std::size_t k=0; k<_G.NK; ++k){
 	  in[i*(_G.NJ * _G.NK) + j*(_G.NK) + k ] = f(i,j,k);
-	  
 	}
       }
     }
     
-    fftw_plan plan_f = fftw_plan_dft_r2c_1d((_G.NI*_G.NJ*_G.NK), in, out, FFTW_ESTIMATE);
+    fftw_plan plan_f = fftw_plan_dft_r2c_3d(_G.NI,_G.NJ,_G.NK, in, out, FFTW_ESTIMATE);
     fftw_execute(plan_f);
-    for (std::size_t i = 0; i <= _G.NI/2; ++i)
-      for (std::size_t j = 0; j < _G.NJ; ++j)
-	for (std::size_t k = 0; k < _G.NK; ++k)
+    for (std::size_t i = 0; i < kx.size(); ++i)
+      for (std::size_t j = 0; j < ky.size(); ++j)
+	for (std::size_t k = 0; k < kz.size(); ++k)
 	  {
-	    std::size_t idx = i*_G.NJ*_G.NK + j*_G.NK + k;
+	    std::size_t idx = i*ky.size()*kz.size() + j*kz.size() + k;
 	    out[idx][0] = -kx[i]*kx[i]*out[idx][0];
 	    out[idx][1] = -kx[i]*kx[i]*out[idx][1];  
 	  }
@@ -323,27 +307,25 @@ public:
   void second_der_y_impl(Func f) {
     double *in;
     fftw_complex *out;
-    in  = (double*) fftw_malloc(sizeof(double) * (_G.NI * _G.NJ * _G.NK));
-    out = (fftw_complex*) fftw_malloc(sizeof(fftw_complex) * ((_G.NI * _G.NJ * _G.NK)
-							      /2 + 1));
-    for (std::size_t i=0; i<kx.size() ; ++i){
-      for (std::size_t j=0; j<ky.size(); ++j){
-	for (std::size_t k=0; k<kz.size(); ++k){
+    in  = (double *) fftw_malloc(sizeof(double ) * _G.NI * _G.NJ * _G.NK);
+    out = (fftw_complex*) fftw_malloc(sizeof(fftw_complex) * _G.NI * _G.NJ * (_G.NK/2 + 1));
+    for (std::size_t i=0; i< _G.NI; ++i){
+      for (std::size_t j=0; j<_G.NJ; ++j){
+	for (std::size_t k=0; k<_G.NK; ++k){
 	  in[i*(_G.NJ * _G.NK) + j*(_G.NK) + k ] = f(i,j,k);
-	  
 	}
       }
     }
     
-    fftw_plan plan_f = fftw_plan_dft_r2c_1d((_G.NI*_G.NJ*_G.NK), in, out, FFTW_ESTIMATE);
+    fftw_plan plan_f = fftw_plan_dft_r2c_3d(_G.NI,_G.NJ,_G.NK, in, out, FFTW_ESTIMATE);
     fftw_execute(plan_f);
-    for (std::size_t i = 0; i <= _G.NI/2; ++i)
-      for (std::size_t j = 0; j < _G.NJ; ++j)
-	for (std::size_t k = 0; k < _G.NK; ++k)
+    for (std::size_t i = 0; i < kx.size(); ++i)
+      for (std::size_t j = 0; j < ky.size(); ++j)
+	for (std::size_t k = 0; k < kz.size(); ++k)
 	  {
-	    std::size_t idx = i*_G.NJ*_G.NK + j*_G.NK + k;
-	    out[idx][0] = -ky[i]*ky[i]*out[idx][0];
-	    out[idx][1] = -ky[i]*ky[i]*out[idx][1];  
+	    std::size_t idx = i*ky.size()*kz.size() + j*kz.size() + k;
+	    out[idx][0] = -ky[j]*ky[j]*out[idx][0];
+	    out[idx][1] = -ky[j]*ky[j]*out[idx][1];  
 	  }
     fftw_plan plan_b = fftw_plan_dft_c2r_3d(_G.NI, _G.NJ, _G.NK, out, in, FFTW_ESTIMATE);
     fftw_execute(plan_b);
@@ -368,26 +350,25 @@ public:
     double *in;
     fftw_complex *out;
     in  = (double*) fftw_malloc(sizeof(double) * (_G.NI * _G.NJ * _G.NK));
-    out = (fftw_complex*) fftw_malloc(sizeof(fftw_complex) * ((_G.NI * _G.NJ * _G.NK)
-							      /2 + 1));
-    for (std::size_t i=0; i<kx.size() ; ++i){
-      for (std::size_t j=0; j<ky.size(); ++j){
-	for (std::size_t k=0; k<kz.size(); ++k){
+    out = (fftw_complex*) fftw_malloc(sizeof(fftw_complex) * _G.NI * _G.NJ * (_G.NK/2 + 1));
+    for (std::size_t i=0; i< _G.NI ; ++i){
+      for (std::size_t j=0; j<_G.NJ; ++j){
+	for (std::size_t k=0; k<_G.NK; ++k){
 	  in[i*(_G.NJ * _G.NK) + j*(_G.NK) + k ] = f(i,j,k);
 	  
 	}
       }
     }
     
-    fftw_plan plan_f = fftw_plan_dft_r2c_1d((_G.NI*_G.NJ*_G.NK), in, out, FFTW_ESTIMATE);
+    fftw_plan plan_f = fftw_plan_dft_r2c_3d(_G.NI,_G.NJ,_G.NK, in, out, FFTW_ESTIMATE);
     fftw_execute(plan_f);
-    for (std::size_t i = 0; i <= _G.NI/2; ++i)
-      for (std::size_t j = 0; j < _G.NJ; ++j)
-	for (std::size_t k = 0; k < _G.NK; ++k)
+    for (std::size_t i = 0; i < kx.size(); ++i)
+      for (std::size_t j = 0; j < ky.size(); ++j)
+	for (std::size_t k = 0; k < kz.size(); ++k)
 	  {
-	    std::size_t idx = i*_G.NJ*_G.NK + j*_G.NK + k;
-	    out[idx][0] = -kz[i]*kz[i]*out[idx][0];
-	    out[idx][1] = -kz[i]*kz[i]*out[idx][1];  
+	    std::size_t idx = i*ky.size()*kz.size() + j*kz.size() + k;
+	    out[idx][0] = -kz[k]*kz[k]*out[idx][0];
+	    out[idx][1] = -kz[k]*kz[k]*out[idx][1];  
 	  }
     fftw_plan plan_b = fftw_plan_dft_c2r_3d(_G.NI, _G.NJ, _G.NK, out, in, FFTW_ESTIMATE);
     fftw_execute(plan_b);

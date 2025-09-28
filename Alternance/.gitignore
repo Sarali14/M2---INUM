@@ -1,2 +1,29 @@
 projet_cpp_sw/Notes*
 Finite-Difference-Method/
+
+# Ignore all .bin files anywhere
+*.bin
+
+*.png
+
+# Ignore specific files in test_3D directory
+test_3D/temporary.txt
+test_3D/test3
+
+# Ignore all test executables
+test*
+
+# Build directories
+build/
+bin/
+obj/
+
+# IDE files
+.vscode/
+.idea/
+
+# OS files
+.DS_Store
+*.bin
+project_cpp_sw/test_3D/temporary.txt
+
