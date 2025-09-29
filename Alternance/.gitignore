@@ -6,8 +6,9 @@ Finite-Difference-Method/
 *.png
 
 # Ignore specific files in test_3D directory
-test_3D/temporary.txt
-test_3D/test3
+derivative_implementation/test_3D/temporary.txt
+derivative_implementation/test_3D/test3
+derivative_implementation/test_2D/test3
 
 # Build directories
 build/
@@ -21,5 +22,4 @@ obj/
 # OS files
 .DS_Store
 *.bin
-derivative_implementation/test_3D/temporary.txt
 
