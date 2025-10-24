@@ -37,5 +37,9 @@ public:
   #endif
   return i*_Stride_i + j;
   }
+
+  void init_zero(){
+    std::fill(_data.begin(),_data.end(),T(0));
+  }
   
 };
