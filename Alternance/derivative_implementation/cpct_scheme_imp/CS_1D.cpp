@@ -58,7 +58,7 @@ int main(int argc,char* argv[]){
   auto b = solver->get_b();
   auto c= solver->get_c();
 
-  std::cout<< " your coefficients are : alpha = " <<alpha << ", beta = " <<beta<<", a = "<< a<<", b = "<<b<<", c = "<<c;
+  std::cout<< " your coefficients are : alpha = " <<alpha << ", beta = " <<beta<<", a = "<< a<<", b = "<<b<<", c = "<<c<<".\n";
   
   std::string filename = "approx_der_x.bin";
     

@@ -7,7 +7,7 @@ import ast
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
-
+import matplotlib.pyplot as plt
 
 ROOT = Path("/home/sarah-ali/M2---INUM/Master_2/Optimisation_Avancee/AMON")   # AMON folder
 sys.path.insert(0, str(ROOT))
@@ -76,13 +76,13 @@ Y_norm = (Y_tensor - Y_mean) / Y_std
 class myNet(nn.Module):
   def __init__(self): 
     super(myNet, self).__init__()
-    self.fc1=nn.Linear(20,64) 
-    self.fc2=nn.Linear(64,64)
-    self.fc3=nn.Linear(64,64)
-    self.fc4=nn.Linear(64,1) 
+    self.fc1=nn.Linear(20,128) 
+    self.fc2=nn.Linear(128,128)
+    self.fc3=nn.Linear(128,128)
+    self.fc4=nn.Linear(128,1) 
 
   def forward(self, x):
-    x=F.relu(self.fc1(x)) #here we see the application as qsked in question ( fully_connected -> relu -> fully_connected ... relu -> fully connected)
+    x=F.relu(self.fc1(x)) 
     x=F.relu(self.fc2(x))
     x=F.relu(self.fc3(x))
     x=self.fc4(x)
@@ -138,8 +138,56 @@ for epoch in range(1,epochs+1): #"loop over epochs for the training"
         break
 
 myNet.eval()
+with torch.no_grad():
+    predicted_norm_test = myNet(X_test)
 
-# Suppose you have a new layout file
+# Denormalize both the predictions and the actual test values to their original scale
+# This is crucial for interpreting the results correctly.
+predicted_values_test = predicted_norm_test * Y_std + Y_mean
+exact_values_test = Y_test * Y_std + Y_mean
+
+# Convert tensors to NumPy arrays for plotting with Matplotlib
+predicted_np = predicted_values_test.numpy()
+exact_np = exact_values_test.numpy()
+
+# --- Create the Predicted vs. Exact Plot ---
+
+plt.figure(figsize=(10, 10))
+# Create the scatter plot of actual vs predicted values
+plt.scatter(exact_np, predicted_np, alpha=0.7, label='Model Predictions')
+
+# Determine the limits for the perfect prediction line
+# We want the line to span the full range of our data
+min_val = min(exact_np.min(), predicted_np.min())
+max_val = max(exact_np.max(), predicted_np.max())
+
+# Plot the y=x line for reference (a perfect model would have all points on this line)
+plt.plot([min_val, max_val], [min_val, max_val], 'r--', lw=2, label='Perfect Prediction')
+
+# Add labels and a title for clarity
+plt.xlabel("Exact Penalized Values", fontsize=14)
+plt.ylabel("Predicted Penalized Values", fontsize=14)
+plt.title("Predicted vs. Exact Values (Test Set)", fontsize=16)
+plt.grid(True)
+plt.legend(fontsize=12)
+plt.axis('equal') # Ensures the x and y axes have the same scale for a true 45-degree line
+plt.show()
+
+plt.figure(figsize=(12, 6))
+
+# Plot a histogram of the exact values from the test set
+plt.hist(exact_np, bins=30, alpha=0.8, label='Exact Values (Test Set)')
+
+# You can also plot the predicted values to see if the model is replicating the distribution
+plt.hist(predicted_np, bins=30, alpha=0.7, label='Predicted Values (Test Set)')
+
+plt.xlabel("Penalized Value", fontsize=14)
+plt.ylabel("Frequency (Number of Layouts)", fontsize=14)
+plt.title("Distribution of Exact and Predicted Values in the Test Set", fontsize=16)
+plt.legend()
+plt.grid(axis='y', linestyle='--')
+plt.show()
+"""# Suppose you have a new layout file
 new_layout_file = "CODE/layout_new_000.txt"
 new_layout = read_layout(new_layout_file)  # list of 20 coordinates
 new_tensor = torch.tensor([new_layout], dtype=torch.float32)  # batch size 1
@@ -150,4 +198,4 @@ with torch.no_grad():
     predicted_norm = myNet(new_tensor_norm)
     predicted_value = predicted_norm * Y_std + Y_mean
 print("Predicted penalized value:", predicted_value.item())
-print("Exact penalized value :" ,penalized_function(new_layout_file,lambd))
+print("Exact penalized value :" ,penalized_function(new_layout_file,lambd))"""

@@ -86,17 +86,17 @@ public:
        _A(i,(i+1)%_N)=w*_A(i,(i+1)%_N);
     }
     
-    for (std::size_t i=_N-3;i>1;--i){ //backward pass
+    for (std::size_t i=_N-3;i>=1;--i){ //backward pass
        _d[i]=_d[i]-_A(i,(i+1)%_N)*_d[i+1];
        _A(i,(i-1+_N)%_N)=_A(i,(i-1+_N)%_N)-_A(i,(i+1)%_N)*_A(i+1,(i-1+_N)%_N);
        _A(i,(i+1)%_N)=-_A(i,(i+1)%_N)*_A(i+1,(i+1)%_N);
     }
-    w=1/(1-_A(0,1)*_A(1,0));
+    w=1.0/(1.0-_A(0,1)*_A(1,0));
     _d[0]=w*(_d[0]-_A(0,1)*_d[1]);
-    _A(1,0)=w*_A(0,1);
+    _A(1,(0-1+_N)%_N)=w*_A(0,(0-1+_N)%_N);
     _A(0,1)=-w*_A(0,1)*_A(1,2);
     
-    for (std::size_t i=1;i<_N-2;++i){ //substitution
+    for (std::size_t i=1;i<=_N-2;++i){ //substitution
        _d[i]=_d[i]-_A(i,(i-1+_N)%_N)*_d[0]-_A(i,(i+1)%_N)*_d[_N-1];
      }
     }  

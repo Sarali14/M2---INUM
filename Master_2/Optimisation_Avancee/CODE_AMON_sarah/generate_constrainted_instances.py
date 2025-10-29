@@ -165,7 +165,7 @@ if __name__ == '__main__':
     # ============================
     # Préparer le dossier turbine_layouts
     # ============================
-    OUT_DIR = Path("CODE") / "turbine_layouts"
+    OUT_DIR = Path("CODE") / "turbine_layouts_test"
     # Ensure the directory is clean before generating new files
     if OUT_DIR.exists():
         for f in OUT_DIR.glob("layout_new_*.txt"):
@@ -177,7 +177,7 @@ if __name__ == '__main__':
     # ============================
     # Boucle externe : N essais
     # ============================
-    N_TRIES = 400
+    N_TRIES = 200
     NB_TURBINES = 10
     MAX_REJECTS = 1000
     EPS = 1e-9
@@ -196,7 +196,7 @@ if __name__ == '__main__':
 
 
         # Sauvegarde dans fichier individuel
-        filename = OUT_DIR / f"layout_constrainted_{i:03d}.txt"
+        filename = OUT_DIR / f"layout_test_{i:03d}.txt"
         with open(filename, "w", encoding="utf-8") as ftxt:
             ftxt.write(str(coords_flat))
 
