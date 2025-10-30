@@ -7,15 +7,15 @@ import ast
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
+import matplotlib.pyplot as plt
 
-
-ROOT = Path("/home/sarah-ali/M2---INUM/Master_2/Optimisation_Avancee/AMON")   # AMON folder
+ROOT = Path("/home/sarah-ali/M2---INUM/Optimisation_Avancee/AMON")   # AMON folder
 sys.path.insert(0, str(ROOT))
 
 import windfarm_eval
 
 Instances = str(ROOT / "instances/1/param3.txt")
-coordinates_folder=Path.cwd() / "CODE/turbine_layouts"
+coordinates_folder=Path.cwd() / "CODE/turbine_layouts_mixed"
 
 all_instances = list(coordinates_folder.glob("*.txt"))
 random.shuffle(all_instances)
@@ -36,12 +36,12 @@ def read_layout(file_path):
 
 def penalized_function(X_file,lambd):
     EAP,spacing,placing= windfarm_eval.windfarm_eval(Instances,X_file)
-    return EAP - lambd*(spacing+placing)
+    return - EAP + lambd*(spacing+placing)
 
 X = []  # inputs
 Y = []  # penalized outputs
 
-lambd = 0.0001
+lambd = 10
 #print("Looking in folder:", coordinates_folder)
 #print("Number of layout files found:", len(all_instances))
 #print(all_instances[:5]) 
@@ -76,10 +76,10 @@ Y_norm = (Y_tensor - Y_mean) / Y_std
 class myNet(nn.Module):
   def __init__(self): 
     super(myNet, self).__init__()
-    self.fc1=nn.Linear(20,64) 
-    self.fc2=nn.Linear(64,64)
-    self.fc3=nn.Linear(64,64)
-    self.fc4=nn.Linear(64,1) 
+    self.fc1=nn.Linear(20,128) 
+    self.fc2=nn.Linear(128,128)
+    self.fc3=nn.Linear(128,128)
+    self.fc4=nn.Linear(128,1) 
 
   def forward(self, x):
     x=F.relu(self.fc1(x)) 
@@ -138,6 +138,34 @@ for epoch in range(1,epochs+1): #"loop over epochs for the training"
         break
 
 myNet.eval()
+
+# === Evaluate on test set ===
+myNet.eval()
+with torch.no_grad():
+    Y_pred_test_norm = myNet(X_test)
+    Y_pred_test = Y_pred_test_norm * Y_std + Y_mean  # unnormalize
+    Y_true_test = Y_test * Y_std + Y_mean
+
+# Convert to numpy arrays
+Y_pred_np = Y_pred_test.squeeze().cpu().numpy()
+Y_true_np = Y_true_test.squeeze().cpu().numpy()
+
+# Optional: sort by true value to make the line smoother (remove if you prefer raw order)
+sorted_indices = np.argsort(Y_true_np)
+Y_true_sorted = Y_true_np[sorted_indices]
+Y_pred_sorted = Y_pred_np[sorted_indices]
+
+# === Combined plot ===
+plt.figure(figsize=(10,5))
+plt.plot(Y_true_sorted, label="Exact values (line)", color='blue', linewidth=2)
+plt.scatter(range(len(Y_pred_sorted)), Y_pred_sorted, label="Predicted values (scatter)", color='red', alpha=0.7)
+plt.title("Predicted vs Exact Penalized Values (Test Set)")
+plt.xlabel("Sample index (sorted by true value)")
+plt.ylabel("Penalized Value")
+plt.legend()
+plt.grid(True)
+plt.tight_layout()
+plt.show()
 
 # Suppose you have a new layout file
 new_layout_file = "CODE/layout_new_000.txt"

@@ -177,7 +177,7 @@ if __name__ == '__main__':
     # ============================
     # Boucle externe : N essais
     # ============================
-    N_TRIES = 200
+    N_TRIES = 300
     NB_TURBINES = 10
     MAX_REJECTS = 1000
     EPS = 1e-9

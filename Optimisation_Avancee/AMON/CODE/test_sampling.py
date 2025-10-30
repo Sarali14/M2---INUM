@@ -31,7 +31,7 @@ vertices =[527656.8552018718, 5225046.534108513,
                    527656.8552018718, 5225046.534108513,]
 
 nb_Turbines=10
-nb_instances=100
+nb_instances=1
 min_spacing=80
 
 Areas=[]
@@ -57,7 +57,7 @@ for i in range(0,len(triangles),3):
 cumulative_area_distribution=np.cumsum(np.array(Areas)/total_area)
 all_layouts = []
 
-output_folder = "turbine_layouts"
+output_folder = "CODE"
 if not os.path.exists(output_folder):
     os.makedirs(output_folder)
     print(f"Created directory: {output_folder}")

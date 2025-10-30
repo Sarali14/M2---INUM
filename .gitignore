@@ -6,6 +6,7 @@ Finite-Difference-Method/
 *.png
 
 # Ignore specific files in test_3D directory
+Optimisation_Avancee/AMON/__pycache__
 Optimisation_Avancee/AMON/CODE/turbine_layouts
 Optimisation_Avancee/AMON/CODE/__pycache__
 Optimisation_Avancee/AMON/CODE/layout_new_000.txt
@@ -22,6 +23,7 @@ obj/
 # OS files
 .DS_Store
 *.bin
+*.txt
 
 # -------------------------------
 # LaTeX build files and auxiliaries
