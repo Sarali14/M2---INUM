@@ -6,13 +6,10 @@ Finite-Difference-Method/
 *.png
 
 # Ignore specific files in test_3D directory
-Alternance/derivative_implementation/test_3D/temporary.txt
-Alternance/derivative_implementation/test_3D/test3
-Alternance/derivative_implementation/test_2D/test3
-
-Master_2/Optimisation_Avancee/CODE_AMON_sarah/turbine_layouts
-Master_2/Optimisation_Avancee/CODE_AMON_sarah/__pycache__
-Master_2/Optimisation_Avancee/CODE_AMON_sarah/layout_new_000.txt
+Optimisation_Avancee/AMON/CODE/turbine_layouts
+Optimisation_Avancee/AMON/CODE/__pycache__
+Optimisation_Avancee/AMON/CODE/layout_new_000.txt
+Optimisation_Avancee/AMON/CODE/turbine_layouts_test
 # Build directories
 build/
 bin/
@@ -26,5 +23,49 @@ obj/
 .DS_Store
 *.bin
 
-Alternance/2025-10-09-Note-10-57.xopp
+# -------------------------------
+# LaTeX build files and auxiliaries
+# -------------------------------
+*.aux
+*.bbl
+*.bcf
+*.blg
+*.fdb_latexmk
+*.fls
+*.idx
+*.ilg
+*.ind
+*.lof
+*.log
+*.lot
+*.nav
+*.out
+*.pdfsync
+*.run.xml
+*.snm
+*.synctex.gz
+*.synctex(busy)
+*.toc
+*.vrb
+*.xdv
+*.xmpi
+*.xwm
 
+# -------------------------------
+# Editor backup and temp files
+# -------------------------------
+*~
+*.swp
+*.bak
+*.tmp
+*.backup
+*.DS_Store
+Thumbs.db
+
+# -------------------------------
+# VS Code LaTeX Workshop temporary files
+# -------------------------------
+
+latex.out/
+out/
+build/
