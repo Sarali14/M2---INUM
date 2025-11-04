@@ -1,3 +1,4 @@
+
 import numpy as np
 import torch
 from pathlib import Path
@@ -41,7 +42,7 @@ def penalized_function(X_file,lambd):
 X = []  # inputs
 Y = []  # penalized outputs
 
-lambd = 10
+lambd = 1000
 #print("Looking in folder:", coordinates_folder)
 #print("Number of layout files found:", len(all_instances))
 #print(all_instances[:5]) 
@@ -76,16 +77,16 @@ Y_norm = (Y_tensor - Y_mean) / Y_std
 class myNet(nn.Module):
   def __init__(self): 
     super(myNet, self).__init__()
-    self.fc1=nn.Linear(20,128) 
-    self.fc2=nn.Linear(128,128)
-    self.fc3=nn.Linear(128,128)
-    self.fc4=nn.Linear(128,1) 
+    self.fc1=nn.Linear(20,32) 
+    #self.fc2=nn.Linear(32,32)
+    #self.fc3=nn.Linear(128,128)
+    self.fc2=nn.Linear(32,1) 
 
   def forward(self, x):
     x=F.relu(self.fc1(x)) 
-    x=F.relu(self.fc2(x))
-    x=F.relu(self.fc3(x))
-    x=self.fc4(x)
+    #x=F.relu(self.fc2(x))
+    #x=F.relu(self.fc3(x))
+    x=self.fc2(x)
 
     return x
 
@@ -168,7 +169,7 @@ plt.tight_layout()
 plt.show()
 
 # Suppose you have a new layout file
-new_layout_file = "CODE/layout_new_000.txt"
+new_layout_file = "CODE/layout_random_000.txt"
 new_layout = read_layout(new_layout_file)  # list of 20 coordinates
 new_tensor = torch.tensor([new_layout], dtype=torch.float32)  # batch size 1
 
