@@ -3,13 +3,13 @@ from pathlib import Path
 import sys
 from datetime import datetime
 
-ROOT = Path("/home/sarah-ali/M2---INUM/Master_2/Optimisation_Avancee/AMON")   # AMON folder
+ROOT = Path("/home/sarah-ali/M2---INUM/Optimisation_Avancee/AMON")   # AMON folder
 sys.path.insert(0, str(ROOT))
 
 import windfarm_eval
 
 Instance = str(ROOT / "instances/1/param3.txt")
-X0_filz = str(ROOT / "instances/1/x3.txt")
+X0_filz = str(ROOT / "CODE/samples_LH/Sample_LH_0.txt")
 results_file = ROOT / "instances/1/nelder_mead_log.txt"
 def penalized_function(X, instance_path, lambd):
     try:
@@ -21,7 +21,7 @@ def penalized_function(X, instance_path, lambd):
     # Combine into penalized objective
     return -EAP + lambd * (spacing + placing)
  
-def initialize_simplex(X, delta=2.0):
+def initialize_simplex(X, delta):
     if isinstance(X, str):  # if user passed a filename instead of array
         with open(X, "r", encoding="utf-8") as f:
             s = f.read()
@@ -30,15 +30,16 @@ def initialize_simplex(X, delta=2.0):
     X = np.array(X, dtype=float)
     n = len(X)
     simplex = [X.copy()]
+    base=X.copy()
     for i in range(n):
-        X = X.copy()
-        X[i] += delta
-        simplex.append(X)
+        X_new = base.copy()
+        X_new[i] += delta
+        simplex.append(X_new)
     return simplex
 
-l=0.0001
+l=1
 
-simplex = initialize_simplex(X0_filz,delta=2)
+simplex = initialize_simplex(X0_filz,delta=100000)
 
 def ordering(penalized_function, simplex, instance_path, lambd):
     func_vals = [penalized_function(x, instance_path, lambd) for x in simplex]
@@ -47,9 +48,9 @@ def ordering(penalized_function, simplex, instance_path, lambd):
     sorted_func = [func_vals[i] for i in sorted_indices]
     return sorted_func, sorted_simplex
 
-def Nelder_Mead(simplex, instance_path, penalized_function, lambd=0.5,
-                alpha=1.0, gamma=2.0, rho=0.5, sigma=0.5,
-                tol=1e-3, max_iter=100):
+def Nelder_Mead(simplex, instance_path, penalized_function, lambd,
+                alpha=1.5, gamma=3.0, rho=0.5, sigma=0.5,
+                tol=1e-6, max_iter=100):
     iter_count = 0
     with open(results_file, "w", encoding="utf-8") as f:
         f.write("Iteration\tBest_penalized_EAP\tMove\tStdDev\n")
@@ -101,7 +102,10 @@ def Nelder_Mead(simplex, instance_path, penalized_function, lambd=0.5,
 
                     # Recompute function values for the updated simplex
                     func_vals = [penalized_function(x, instance_path, lambd) for x in simplex]
-                
+        func_vals = [penalized_function(x, instance_path, lambd) for x in simplex]
+        sorted_indices = np.argsort(func_vals)
+        simplex = [simplex[i] for i in sorted_indices]
+        func_vals = [func_vals[i] for i in sorted_indices]
         best_so_far = func_vals[0]
         print(f"Iteration {iter_count}: Best objective = {-best_so_far:.12f}, Move = {move_type}")
         with open(results_file, "a", encoding="utf-8") as f:

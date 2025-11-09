@@ -24,7 +24,7 @@ obj/
 .DS_Store
 *.bin
 *.txt
-
+*.pt
 # -------------------------------
 # LaTeX build files and auxiliaries
 # -------------------------------
