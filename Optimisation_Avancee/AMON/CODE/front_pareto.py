@@ -54,7 +54,7 @@ print(f"\nApproximate Pareto points found (unique layouts): {len(pareto_approx_i
 plt.figure(figsize=(8, 6))
 
 # All points
-plt.scatter(f1,f2, s=15, alpha=0.3, color='black',label="f1 evaluated layouts")
+plt.scatter(f1,f2, s=15, alpha=0.3, color='black',label="f1 and f2  evaluated layouts")
 
 # Weighted-sum approximate front (unique points)
 if len(pareto_approx) > 0:

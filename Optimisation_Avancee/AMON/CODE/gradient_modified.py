@@ -4,6 +4,7 @@ import sys
 import matplotlib.pyplot as plt
 from shapely.geometry import Polygon,box,shape
 import shapefile
+import json
 
 ROOT = Path("/home/sarah-ali/M2---INUM/Optimisation_Avancee/AMON")   # AMON folder
 sys.path.insert(0, str(ROOT))
@@ -146,8 +147,8 @@ X_9 = [float(t) for t in s.split()]      # length = 18  (9 turbines)
 
 # --- Add a 10th turbine (initial guess) ---
 # You can choose something smarter if you know the farm bounds.
-x10_init = 1000.0
-y10_init = 1000.0
+x10_init = 1020
+y10_init = 300
 X_init_10 = X_9 + [x10_init, y10_init]
 
 # Index of the 10th turbine in [x0,y0,x1,y1,...]
@@ -157,7 +158,7 @@ tenth_index = n_turbines - 1           # 0-based index (so 9 if there are 10 tur
 free_turbines = [tenth_index]          # only move the 10th turbine
 
 h = 12
-l = 1
+l = 10
 
 # --- Optional: check gradient only for the 10th turbine ---
 grad = gradient_EAP(Instance, X_init_10, h, l, free_turbines=free_turbines)
@@ -168,8 +169,8 @@ print("Norm of gradient:", np.linalg.norm(grad))
 X_opt ,path= gradient_descent(Instance,
                          X_init_10,
                          h=12,
-                         alpha=400,
-                         tol=1e-6,
+                         alpha=1000,
+                         tol=1e-4,
                          max_iter=100,
                          l=l,
                          free_turbines=free_turbines,
@@ -178,12 +179,17 @@ X_opt ,path= gradient_descent(Instance,
 print("Optimized positions (9 fixed + optimized 10th):", X_opt)
 #print("Path of 10th turbine:", path)
 
+out_path = ROOT / "CODE/optimized_position_manuelle_1.txt"
+with open(out_path, "w") as f:
+    json.dump(X_opt, f, indent=2)
+
+print(f"\n Saved evaluations to {out_path}")
+
 # --- Prepare coordinates ---
 coords_opt = np.array(X_opt).reshape(-1, 2)   # shape (10, 2)
 path_arr = np.array(path)                     # shape (n_steps, 2)
 
 poly = Polygon(zip(xs, ys))
-bbox = box(xmin, ymin, xmax, ymax)
 
 plt.figure(figsize=(8,7))
 
