@@ -3,13 +3,13 @@ from pathlib import Path
 import sys
 import matplotlib.pyplot as plt
 
-ROOT = Path("/home/sarah-ali/M2---INUM/Master_2/Optimisation_Avancee/AMON")   # AMON folder
+ROOT = Path("/home/sarah-ali/M2---INUM/Optimisation_Avancee/AMON")   # AMON folder
 sys.path.insert(0, str(ROOT))
 
 import windfarm_eval
 
-Instance = str(ROOT / "instances/1/param3.txt")
-X0_filz = str(ROOT / "instances/1/x3.txt")
+Instance = str(ROOT / "instances/2/param.txt")
+X0_filz = str(ROOT / "CODE/samples_LH_square_9_scipy/Sample_LH_0000.txt")
 
 def gradient_EAP(instance_path, X, h,l):
     """
@@ -57,7 +57,7 @@ def gradient_EAP(instance_path, X, h,l):
     
     return grad
 h=12
-l=0.5
+l=1
 grad = gradient_EAP(Instance, X0_filz, h,l)
 print("Gradient of EAP:", grad)
 print("Norm of gradient:", np.linalg.norm(grad))

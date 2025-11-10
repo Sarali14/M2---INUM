@@ -4,14 +4,16 @@ from shapely.geometry import Polygon, box,shape
 import os
 import shapefile
 from pathlib import Path
+from scipy.stats import qmc
 
 # --- Polygon vertices ---
 DATA_DIR = Path("/home/sarah-ali/M2---INUM/Optimisation_Avancee/AMON/data")
 SHP_FILE = DATA_DIR / "poly2.shp"   # <-- just change this file name
-N_instances = 300
-n_samples = 10
-margin = 200.0  # meters
-out_dir = "samples_LH_square_FP"
+N_instances = 10
+n_samples = 9
+margin = 0.0  # meters
+out_dir = "samples_LH_square_9_scipy"
+spacing=80.0
 
 # --- Read shapefile geometry using pyshp ---
 sf = shapefile.Reader(str(SHP_FILE))
@@ -36,21 +38,22 @@ ymax = max_y + margin
 print(f"Bounding box :\n  x ∈ [{xmin:.1f}, {xmax:.1f}]\n  y ∈ [{ymin:.1f}, {ymax:.1f}]")
 
 # --- Latin Hypercube Sampling in 2D ---
-def lhs(n_samples, dim):
+"""def lhs(n_samples, dim):
     cut = np.linspace(0, 1, n_samples + 1)
     u = np.random.rand(n_samples, dim)
     a, b = cut[:-1], cut[1:]
     points = a[:, None] + (b - a)[:, None] * u
     for j in range(dim):
         np.random.shuffle(points[:, j])
-    return points
+    return points"""
 
 
 os.makedirs(out_dir, exist_ok=True)
 
 for idx in range(N_instances):
-    lhs_unit = lhs(n_samples,2)  # shape (10, 2)
-    lhs_scaled = np.empty_like(lhs_unit)
+    sampler = qmc.LatinHypercube(d=2, optimization="random-cd")
+    lhs_unit = sampler.random(n=n_samples)  
+    lhs_scaled = np.zeros_like(lhs_unit)
     lhs_scaled[:, 0] = xmin + (xmax - xmin) * lhs_unit[:, 0]
     lhs_scaled[:, 1] = ymin + (ymax - ymin) * lhs_unit[:, 1]
     # Save as a Python list of [x, y] pairs, compatible with ast.literal_eval
@@ -63,7 +66,8 @@ for idx in range(N_instances):
 
     print(f"Saved {file_path}")
 
-lhs_unit = lhs(n_samples, 2)
+sampler = qmc.LatinHypercube(d=2, optimization="random-cd")
+lhs_unit = sampler.random(n=n_samples)
 
 lhs_scaled = np.empty_like(lhs_unit)
 lhs_scaled[:, 0] = xmin + (xmax - xmin) * lhs_unit[:, 0]
@@ -82,7 +86,7 @@ plt.plot(x_poly, y_poly, color="blue", linewidth=2, label="Polygon")
 x_box, y_box = bbox.exterior.xy
 plt.plot(x_box, y_box, "k--", label="Bounding box")
 # LHS points
-plt.scatter(lhs_scaled[:, 0], lhs_scaled[:, 1], c="red", s=10, alpha=0.6, label="LHS samples")
+plt.scatter(lhs_scaled[:, 0], lhs_scaled[:, 1], c="red", s=10, alpha=0.6, label="LHS samples (scipy)")
 
 plt.xlabel("X (m)")
 plt.ylabel("Y (m)")
