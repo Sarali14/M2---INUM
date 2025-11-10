@@ -13,7 +13,7 @@ sys.path.insert(0, str(ROOT))
 instance_path = str(ROOT / "instances/2/param_bis.txt")
 
 # --- Folder with layouts ---
-coordinates_folder = ROOT / "CODE/samples_LH_FP"
+coordinates_folder = ROOT / "CODE/samples_LH_square_FP"
 all_instances = sorted(coordinates_folder.glob("*.txt"))
 
 evaluations = []

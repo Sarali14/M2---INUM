@@ -11,14 +11,18 @@ ROOT = Path("/home/sarah-ali/M2---INUM/Optimisation_Avancee/AMON")   # AMON fold
 sys.path.insert(0, str(ROOT))
 
 import windfarm_eval as windfarm
-import constraints as cst
 
 Instances = str(ROOT / "instances/2/param_bis.txt")
-coordinates_folder=Path.cwd() / "CODE/samples_LH"
+coordinates_folder=Path.cwd() / "CODE/samples_LH_square_training"
 
 all_instances = list(coordinates_folder.glob("*.txt"))
 random.shuffle(all_instances)
 
+"""print("Looking for layouts in:", coordinates_folder)
+print("Found", len(all_instances), "files")
+if len(all_instances) == 0:
+    raise RuntimeError("No layout files found – check folder path and names.")
+"""
 def read_layout(file_path):
     with open(file_path, 'r') as f:
         content = f.read().strip()
@@ -35,17 +39,16 @@ Y_eap=[]
 for layout_file in all_instances:  # loop over your 500 .txt files
     # read the layout from file
     layout = read_layout(layout_file)  # list of [x1, y1, ..., x10, y10]
-    
     # flatten if necessary
-    layout_flat = [coord for coord in layout]  # already flattened if read correctly
-    X.append(layout_flat)
-    eap,spacing,placing= windfarm.windfarm_eval(Instances,layout_flat)
+    #layout_flat = [coord for coord in layout]  # already flattened if read correctly
+    X.append(layout)
+    eap,spacing,placing= windfarm.windfarm_eval(Instances,layout)
     Y_eap.append(eap)
-
 
 X=torch.tensor(X,dtype=torch.float32)
 
-n_samples, n_features = X.shape
+n_samples,n_features=X.shape
+
 train_instances=int(n_samples*0.8)
 test_instances=n_samples-train_instances
 
@@ -122,8 +125,8 @@ checkpoint = {
     "Y_std": Y_std,
 }
 
-torch.save(checkpoint, "eap_surrogate.pt")
-print("Saved surrogate to eap_surrogate.pt")
+torch.save(checkpoint, "eap_surrogate_bis.pt")
+print("Saved surrogate to eap_surrogate_bis.pt")
 
 
 """

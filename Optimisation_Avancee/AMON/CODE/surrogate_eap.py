@@ -22,7 +22,7 @@ class MyNet(nn.Module):
         return x
 
 # ---- Load checkpoint once at import time ----
-_checkpoint = torch.load("eap_surrogate.pt", map_location="cpu")
+_checkpoint = torch.load("eap_surrogate_bis.pt", map_location="cpu")
 
 _n_features = _checkpoint["n_features"]
 _model = MyNet(_n_features)

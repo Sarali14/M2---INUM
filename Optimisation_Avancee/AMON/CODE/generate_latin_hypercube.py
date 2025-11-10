@@ -8,10 +8,10 @@ from pathlib import Path
 # --- Polygon vertices ---
 DATA_DIR = Path("/home/sarah-ali/M2---INUM/Optimisation_Avancee/AMON/data")
 SHP_FILE = DATA_DIR / "poly2.shp"   # <-- just change this file name
-N_instances = 500
+N_instances = 300
 n_samples = 10
-margin = 500.0  # meters
-out_dir = "samples_LH_FP"
+margin = 200.0  # meters
+out_dir = "samples_LH_square_FP"
 
 # --- Read shapefile geometry using pyshp ---
 sf = shapefile.Reader(str(SHP_FILE))
@@ -54,11 +54,12 @@ for idx in range(N_instances):
     lhs_scaled[:, 0] = xmin + (xmax - xmin) * lhs_unit[:, 0]
     lhs_scaled[:, 1] = ymin + (ymax - ymin) * lhs_unit[:, 1]
     # Save as a Python list of [x, y] pairs, compatible with ast.literal_eval
-    layout_list = lhs_scaled.tolist()
-    file_path = os.path.join(out_dir, f"Sample_LH_{idx:04d}.txt")
 
+    layout_flat = lhs_scaled.flatten().tolist()
+    file_path = os.path.join(out_dir, f"Sample_LH_{idx:04d}.txt")
+    
     with open(file_path, "w") as f:
-        f.write(repr(layout_list))
+        f.write(repr(layout_flat))
 
     print(f"Saved {file_path}")
 
