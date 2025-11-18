@@ -6,7 +6,10 @@ import sys
 
 ROOT = Path("/home/sarah-ali/M2---INUM/Optimisation_Avancee/AMON")   # AMON folder
 sys.path.insert(0, str(ROOT))
+HERE = Path(__file__).resolve().parent
 
+# Full path to the checkpoint
+CKPT_PATH = HERE / "eap_surrogate.pt"
 import constraints as cst
 
 # ---- Network architecture (same as in training) ----
@@ -22,7 +25,7 @@ class MyNet(nn.Module):
         return x
 
 # ---- Load checkpoint once at import time ----
-_checkpoint = torch.load("eap_surrogate_bis.pt", map_location="cpu")
+_checkpoint = torch.load(CKPT_PATH, map_location="cpu")
 
 _n_features = _checkpoint["n_features"]
 _model = MyNet(_n_features)

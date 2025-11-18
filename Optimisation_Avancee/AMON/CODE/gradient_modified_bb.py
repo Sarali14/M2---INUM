@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 from shapely.geometry import Polygon,box,shape
 import shapefile
 import json
+import time
 
 ROOT = Path("/home/sarah-ali/M2---INUM/Optimisation_Avancee/AMON")   # AMON folder
 sys.path.insert(0, str(ROOT))
@@ -166,6 +167,8 @@ print("Gradient (only 10th turbine non-zero):", grad)
 print("Norm of gradient:", np.linalg.norm(grad))
 
 # --- Run gradient descent: optimize only the 10th turbine ---
+start_time=time.time()
+
 X_opt ,path= gradient_descent(Instance,
                          X_init_10,
                          h=12,
@@ -176,10 +179,13 @@ X_opt ,path= gradient_descent(Instance,
                          free_turbines=free_turbines,
                          track_index=tenth_index)
 
+end_time=time.time()
+runtime=end_time-start_time
+print(f"\nGradient descent runtime: {runtime:.4f} seconds")
 print("Optimized positions (9 fixed + optimized 10th):", X_opt)
 #print("Path of 10th turbine:", path)
 
-out_path = ROOT / "CODE/optimized_position_manuelle_1.txt"
+out_path = ROOT / "CODE/optimized_position_bb.txt"
 with open(out_path, "w") as f:
     json.dump(X_opt, f, indent=2)
 

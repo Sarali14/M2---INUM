@@ -14,7 +14,7 @@ from constraints import buildable_zone
 from penalized_surrogate import penalized_surrogate
 
 # ---- 1. Load instance ----
-instance_path = str(ROOT / "instances/2/param_ter.txt")
+instance_path = str(ROOT / "instances/2/param.txt")
 
 # ---- 2. Load your Latin Hypercube layout ----
 # Folder containing 1 file with 30 turbines (60 coords)

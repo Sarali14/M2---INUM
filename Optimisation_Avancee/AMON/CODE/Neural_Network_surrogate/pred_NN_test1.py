@@ -12,7 +12,7 @@ sys.path.insert(0, str(ROOT))
 
 import windfarm_eval as windfarm
 
-Instances = str(ROOT / "instances/2/param_bis.txt")
+Instances = str(ROOT / "instances/2/param.txt")
 coordinates_folder=Path.cwd() / "CODE/samples_LH_square_training"
 
 all_instances = list(coordinates_folder.glob("*.txt"))
@@ -125,8 +125,8 @@ checkpoint = {
     "Y_std": Y_std,
 }
 
-torch.save(checkpoint, "eap_surrogate_bis.pt")
-print("Saved surrogate to eap_surrogate_bis.pt")
+torch.save(checkpoint, "CODE//Neural_Network_surrogate/eap_surrogate.pt")
+print("Saved surrogate to eap_surrogate.pt")
 
 
 """

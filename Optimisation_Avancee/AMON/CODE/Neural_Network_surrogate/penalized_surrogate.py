@@ -8,7 +8,7 @@ from constraints import placing_constraint, spacing_constraint_min,buildable_zon
 import windfarm_setting as wf
 import data as d
 
-instance_path = str(ROOT / "instances/2/param_bis.txt")
+instance_path = str(ROOT / "instances/2/param.txt")
 
 (nb_wt,
  diameter,
@@ -37,7 +37,7 @@ ok_zone = buildable_zone(boundary_shapely, exclusion_zones_shapely)
 
 # ---- 4. Parameters ----
 D = diameter
-lambd = 1000
+lambd = 10
 
 
 def _split_coords(X):
