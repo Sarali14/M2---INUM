@@ -76,10 +76,10 @@ erences.
         Ym[2*i+1] -= h
 
         # Evaluate EAP at perturbed positions
-        pen_Xp= penalized_surrogate(Xp.tolist(),l)
-        pen_Xm=penalized_surrogate(Xm.tolist(),l)
-        pen_Yp=penalized_surrogate(Yp.tolist(),l)
-        pen_Ym=penalized_surrogate(Ym.tolist(),l)
+        pen_Xp= penalized_surrogate(Xp.tolist(),lambd=l)
+        pen_Xm=penalized_surrogate(Xm.tolist(),lambd=l)
+        pen_Yp=penalized_surrogate(Yp.tolist(),lambd=l)
+        pen_Ym=penalized_surrogate(Ym.tolist(),lambd=l)
 
         # Central difference on the penalized objective: EAP - l*(spacing+placing)
         grad[2*i]   = (pen_Xp-pen_Xm) / (2*h)
@@ -109,7 +109,7 @@ track_index=None):
         grad_norm = np.linalg.norm(grad)
 
         try:
-            pen_val= penalized_surrogate(X.tolist(),l) 
+            pen_val= penalized_surrogate(X.tolist(),lambd=l) 
         except ValueError:
             print(f"Iteration {it+1}: Invalid turbine positions, reducing step size")
             alpha *= 0.5
@@ -121,7 +121,7 @@ track_index=None):
         X_new = X + alpha * grad
 
         try:
-            pen_new=penalized_surrogate(X_new.tolist(),l)
+            pen_new=penalized_surrogate(X_new.tolist(),lambd=l)
         except ValueError:
             alpha *= 0.5
             continue

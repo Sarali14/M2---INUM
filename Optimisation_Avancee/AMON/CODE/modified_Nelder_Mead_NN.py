@@ -14,6 +14,7 @@ import time
 ROOT = Path("/home/sarah-ali/M2---INUM/Optimisation_Avancee/AMON")   # AMON folder
 sys.path.insert(0, str(ROOT))
 sys.path.insert(0,str(ROOT/"CODE"))
+sys.path.insert(0,str(ROOT/"CODE/Neural_Network_surrogate"))
 from penalized_surrogate import penalized_surrogate 
 
 Instance = str(ROOT / "instances/2/param.txt")
@@ -79,6 +80,16 @@ X_new_init = np.array([x_new_init, y_new_init], dtype=float)
 # Simplex is now 2D: only [x_{n+1}, y_{n+1}]
 simplex = initialize_simplex(X_new_init, delta=150.0)
 
+#penalized surrogate for the new turbine
+def penalized_for_new_turbine(x_new, lambd):
+    """
+    x_new: array-like of shape (2,) → [x_{n+1}, y_{n+1}]
+    returns penalized objective for the FULL layout [BASE_LAYOUT, x_new]
+    """
+    x_new = np.array(x_new, dtype=float)
+    full_layout = np.concatenate([BASE_LAYOUT, x_new])  # length 20
+    return penalized_surrogate(full_layout.tolist(), lambd=lambd)
+
 # -------------------------------------------------------------------
 # Nelder–Mead algorithm (returns best point and path)
 # -------------------------------------------------------------------
@@ -93,7 +104,7 @@ def Nelder_Mead(simplex, penalized_function, lambd,
 
     while iter_count < max_iter:
         # --- Step 1: Evaluate and order simplex ---
-        func_vals = [penalized_function(x, lambd) for x in simplex]
+        func_vals = [penalized_function(x, lambd=lambd) for x in simplex]
         sorted_indices = np.argsort(func_vals)  # best first
         simplex = [simplex[i] for i in sorted_indices]
         func_vals = [func_vals[i] for i in sorted_indices]
@@ -107,7 +118,7 @@ def Nelder_Mead(simplex, penalized_function, lambd,
 
         # --- Step 4: Reflection ---
         X_r = centroid + alpha * (centroid - simplex[-1])
-        f_Xr = penalized_function(X_r, lambd)
+        f_Xr = penalized_function(X_r, lambd=lambd)
 
         if f_Xr < func_vals[0]:  # Expansion
             X_e = centroid + gamma * (X_r - centroid)
@@ -126,7 +137,7 @@ def Nelder_Mead(simplex, penalized_function, lambd,
             else:  # inside contraction
                 X_cont = centroid + rho * (simplex[-1] - centroid)
                 move_type = "Inside Contraction"
-            f_Xcont = penalized_function(X_cont, lambd)
+            f_Xcont = penalized_function(X_cont, lambd=lambd)
             if f_Xcont < func_vals[-1]:
                 simplex[-1] = X_cont
             else:
@@ -134,10 +145,10 @@ def Nelder_Mead(simplex, penalized_function, lambd,
                 for i in range(1, len(simplex)):
                     simplex[i] = simplex[0] + sigma * (simplex[i] - simplex[0])
                     move_type = "Shrink"
-                func_vals = [penalized_function(x, lambd) for x in simplex]
+                func_vals = [penalized_function(x, lambd=lambd) for x in simplex]
 
         # Recompute and re-sort
-        func_vals = [penalized_function(x, lambd) for x in simplex]
+        func_vals = [penalized_function(x, lambd=lambd) for x in simplex]
         sorted_indices = np.argsort(func_vals)
         simplex = [simplex[i] for i in sorted_indices]
         func_vals = [func_vals[i] for i in sorted_indices]
@@ -147,16 +158,14 @@ def Nelder_Mead(simplex, penalized_function, lambd,
         current_best_X = simplex[0].copy()
         path.append(current_best_X)
 
-        print(f"Iteration {iter_count}: Best objective = {-best_so_far:.12f}, Move = {move_
-type}")
+        print(f"Iteration {iter_count}: Best objective = {-best_so_far:.12f}, Move = {move_type}")
         with open(results_file, "a", encoding="utf-8") as f:
-            f.write(f"{iter_count}\t{-best_so_far:.6f}\t{move_type}\t{np.std(func_vals):.6e
-}\n")
+            f.write(f"{iter_count}\t{-best_so_far:.6f}\t{move_type}\t{np.std(func_vals):.6e}\n")
 
         iter_count += 1
 
     # Return best vector + path
-    func_vals = [penalized_function(x,  lambd) for x in simplex]
+    func_vals = [penalized_function(x, lambd=lambd) for x in simplex]
     best_index = np.argmin(func_vals)
     return simplex[best_index], func_vals[best_index], path
 
@@ -164,9 +173,7 @@ type}")
 # Run Nelder–Mead for turbine (n+1)
 # -------------------------------------------------------------------
 start_time=time.time()
-best_X_new, best_val, path = Nelder_Mead(
-    simplex, penalized_surrogate, lambd=l
-)
+best_X_new, best_val, path = Nelder_Mead(simplex, penalized_for_new_turbine, lambd=l)
 end_time=time.time()
 runtime=end_time-start_time
 print(f"\nNelder Mead runtime: {runtime:.4f} seconds")
