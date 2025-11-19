@@ -17,9 +17,9 @@ clear
 
 
 
-m0 = 2500;          // Masse satellite à t0 en kg
+m0 = 3000;          // Masse satellite à t0 en kg
 Cp = 1.3;           // on suppose Ca=0.7, Cs = 0.3 et Cd=0 donc Cp=Ca +2*Cs
-S  = 40;            // Surface Panneau solaire
+S  = 60;            // Surface Panneau solaire
 F  = Cp*S*1366/3e8; // Pression de radiation en N
 g0 = 9.80665;       // Gravité terrestre en ms^-2
 mu_boddy    = 3.9860064E+14;  // constante gravitationnel de la terre en m^3s^-2
