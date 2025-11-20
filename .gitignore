@@ -53,7 +53,7 @@ obj/
 *.xdv
 *.xmpi
 *.xwm
-
+*.pyc
 # -------------------------------
 # Editor backup and temp files
 # -------------------------------
