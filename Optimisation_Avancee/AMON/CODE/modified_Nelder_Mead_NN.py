@@ -13,8 +13,8 @@ import time
 # -------------------------------------------------------------------
 ROOT = Path("/home/sarah-ali/M2---INUM/Optimisation_Avancee/AMON")   # AMON folder
 sys.path.insert(0, str(ROOT))
-sys.path.insert(0,str(ROOT/"CODE"))
-sys.path.insert(0,str(ROOT/"CODE/Neural_Network_surrogate"))
+sys.path.insert(0, str(ROOT / "CODE"))
+sys.path.insert(0, str(ROOT / "CODE/Neural_Network_surrogate"))
 from penalized_surrogate import penalized_surrogate 
 
 Instance = str(ROOT / "instances/2/param.txt")
@@ -33,8 +33,8 @@ print(f"{SHP_FILE.name} contains {len(sf.shapes())} shapes")
 shapes = sf.shapes()
 largest_shape = max(shapes, key=lambda s: Polygon(s.points).area)
 points = largest_shape.points
-xs = 1.2*np.array([p[0] for p in points])
-ys = 1.2*np.array([p[1] for p in points])
+xs = 1.2 * np.array([p[0] for p in points])
+ys = 1.2 * np.array([p[1] for p in points])
 
 # --- Compute bounding box (if you want it later) ---
 min_x, max_x = xs.min(), xs.max()
@@ -72,26 +72,28 @@ l = 10.0  # penalty parameter
 # -------------------------------------------------------------------
 # Initial guess for turbine n+1
 # -------------------------------------------------------------------
-x_new_init = -80.0   # your manual guess
-y_new_init = -150.0    # your manual guess
+x_new_init = 1050.0     # your manual guess
+y_new_init = 150.0    # your manual guess
 
 X_new_init = np.array([x_new_init, y_new_init], dtype=float)
 
 # Simplex is now 2D: only [x_{n+1}, y_{n+1}]
 simplex = initialize_simplex(X_new_init, delta=150.0)
 
-#penalized surrogate for the new turbine
+# -------------------------------------------------------------------
+# penalized surrogate for the new turbine
+# -------------------------------------------------------------------
 def penalized_for_new_turbine(x_new, lambd):
     """
     x_new: array-like of shape (2,) → [x_{n+1}, y_{n+1}]
     returns penalized objective for the FULL layout [BASE_LAYOUT, x_new]
     """
     x_new = np.array(x_new, dtype=float)
-    full_layout = np.concatenate([BASE_LAYOUT, x_new])  # length 20
+    full_layout = np.concatenate([BASE_LAYOUT, x_new])  # length 2*(n+1)
     return penalized_surrogate(full_layout.tolist(), lambd=lambd)
 
 # -------------------------------------------------------------------
-# Nelder–Mead algorithm (returns best point and path)
+# Nelder–Mead algorithm (returns best point, value, path, iters, reached_max)
 # -------------------------------------------------------------------
 def Nelder_Mead(simplex, penalized_function, lambd,
                 alpha=1.5, gamma=3.0, rho=0.5, sigma=0.5,
@@ -122,7 +124,7 @@ def Nelder_Mead(simplex, penalized_function, lambd,
 
         if f_Xr < func_vals[0]:  # Expansion
             X_e = centroid + gamma * (X_r - centroid)
-            f_Xe = penalized_function(X_e, lambd)
+            f_Xe = penalized_function(X_e, lambd=lambd)
             simplex[-1] = X_e if f_Xe < f_Xr else X_r
             move_type = "Expansion"
 
@@ -164,19 +166,38 @@ def Nelder_Mead(simplex, penalized_function, lambd,
 
         iter_count += 1
 
-    # Return best vector + path
+    # Return best vector + path + iteration info
     func_vals = [penalized_function(x, lambd=lambd) for x in simplex]
     best_index = np.argmin(func_vals)
-    return simplex[best_index], func_vals[best_index], path
+    reached_max_iter = (iter_count >= max_iter)
+    return simplex[best_index], func_vals[best_index], path, iter_count, reached_max_iter
 
 # -------------------------------------------------------------------
 # Run Nelder–Mead for turbine (n+1)
 # -------------------------------------------------------------------
-start_time=time.time()
-best_X_new, best_val, path = Nelder_Mead(simplex, penalized_for_new_turbine, lambd=l)
-end_time=time.time()
-runtime=end_time-start_time
+alpha = 1.5
+gamma = 3.0
+rho = 0.5
+sigma = 0.5
+tol = 1e-6
+max_iter = 100
+
+start_time = time.time()
+best_X_new, best_val, path, n_iter, reached_max = Nelder_Mead(
+    simplex,
+    penalized_for_new_turbine,
+    lambd=l,
+    alpha=alpha,
+    gamma=gamma,
+    rho=rho,
+    sigma=sigma,
+    tol=tol,
+    max_iter=max_iter
+)
+end_time = time.time()
+runtime = end_time - start_time
 print(f"\nNelder Mead runtime: {runtime:.4f} seconds")
+
 # Build full best layout: [base layout, best_X_new]
 full_best_layout = np.concatenate([BASE_LAYOUT, best_X_new])
 
@@ -201,6 +222,23 @@ with open(results_file, "a", encoding="utf-8") as f:
     np.savetxt(f, np.array(best_X_new), fmt="%.6f")
     f.write("Full layout vector (including turbine n+1):\n")
     np.savetxt(f, full_best_layout, fmt="%.6f")
+
+# -------------------------------------------------------------------
+# Pretty summary "table" like the others
+# -------------------------------------------------------------------
+start_pos = X_new_init.tolist()
+end_pos = best_X_new.tolist()
+
+print("\n" + "=" * 90)
+print(f"{'NELDER–MEAD (NN) SETTINGS':<40} {'TURBINE (n+1) & RUNTIME':<40}")
+print("-" * 90)
+print(f"{'Alpha (reflection)':<28} {alpha:<10.3f} {'Start [x, y]':<22} {start_pos}")
+print(f"{'Gamma (expansion)':<28} {gamma:<10.3f} {'Final [x, y]':<22} {end_pos}")
+print(f"{'Rho (contraction)':<28} {rho:<10.3f} {'Runtime (s)':<22} {runtime:.4f}")
+print(f"{'Sigma (shrink)':<28} {sigma:<10.3f} {'Iterations used':<22} {n_iter}")
+print(f"{'Tolerance':<28} {tol:<10.2e} {'Reached max_iter?':<22} {reached_max}")
+print(f"{'Max iterations':<28} {max_iter:<10d} {'Penalty λ':<22} {l:.3f}")
+print("=" * 90 + "\n")
 
 # -------------------------------------------------------------------
 # Prepare data for plotting
@@ -240,7 +278,7 @@ plt.scatter(path_arr[-1, 0], path_arr[-1, 1],
 
 plt.xlabel("x")
 plt.ylabel("y")
-plt.title("Nelder–Mead path of turbine n+1")
+plt.title("Nelder–Mead path of turbine n+1 (NN surrogate)")
 plt.legend()
 plt.axis("equal")
 plt.grid(True)

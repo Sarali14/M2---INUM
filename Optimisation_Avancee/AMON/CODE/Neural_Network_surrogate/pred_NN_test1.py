@@ -6,10 +6,11 @@ import torch.optim as optim
 from pathlib import Path
 import sys,ast,random
 import matplotlib.pyplot as plt
+import time
 
 ROOT = Path("/home/sarah-ali/M2---INUM/Optimisation_Avancee/AMON")   # AMON folder
 sys.path.insert(0, str(ROOT))
-
+start_time=time.time()
 import windfarm_eval as windfarm
 
 Instances = str(ROOT / "instances/2/param.txt")
@@ -110,12 +111,14 @@ for epoch in range(1,epochs+1):
         Y_pred_test = model(X_test)
         Y_pred_test_MSE = loss_function(Y_pred_test, Y_test)
 
-"""train_error.append(Y_pred_train_MSE.item())
+    """train_error.append(Y_pred_train_MSE.item())
     test_error.append(Y_pred_test_MSE.item())
     epochs_list.append(epoch)
 
     if epoch % 10 == 0:
         print(f"Epoch {epoch}: train={Y_pred_train_MSE.item():.4f}, test={Y_pred_test_MSE.item():.4f}")"""
+
+
 checkpoint = {
     "model_state_dict": model.state_dict(),
     "n_features": n_features,   # this is X.shape[1]
@@ -127,10 +130,10 @@ checkpoint = {
 
 torch.save(checkpoint, "CODE//Neural_Network_surrogate/eap_surrogate.pt")
 print("Saved surrogate to eap_surrogate.pt")
+end_time=time.time()
+print(f"Total script runtime: {end_time - start_time:.2f} seconds")
 
-
-"""
-# ---- Plot ----
+"""# ---- Plot ----
 plt.plot(epochs_list, train_error, label="Training Set", color='magenta')
 plt.plot(epochs_list, test_error, label="Validation Set", color='gray')
 best_idx = int(np.argmin(test_error))  
@@ -158,4 +161,4 @@ plt.ylabel("Predicted EAP")
 plt.title("Test set: exact vs predicted EAP")
 plt.grid(True)
 plt.show()
-"""   
+"""

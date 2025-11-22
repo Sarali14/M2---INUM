@@ -32,8 +32,8 @@ print(f"{SHP_FILE.name} contains {len(sf.shapes())} shapes")
 shapes = sf.shapes()
 largest_shape = max(shapes, key=lambda s: Polygon(s.points).area)
 points = largest_shape.points
-xs = 1.2*np.array([p[0] for p in points])
-ys = 1.2*np.array([p[1] for p in points])
+xs = 1.2 * np.array([p[0] for p in points])
+ys = 1.2 * np.array([p[1] for p in points])
 
 # --- Compute bounding box (if you want it later) ---
 min_x, max_x = xs.min(), xs.max()
@@ -99,8 +99,8 @@ l = 10.0  # penalty parameter
 # -------------------------------------------------------------------
 # Initial guess for turbine n+1
 # -------------------------------------------------------------------
-x_new_init = -80.0   # your manual guess
-y_new_init = -150.0    # your manual guess
+x_new_init = 1050.0   # your manual guess
+y_new_init = 150.0    # your manual guess
 
 X_new_init = np.array([x_new_init, y_new_init], dtype=float)
 
@@ -108,13 +108,14 @@ X_new_init = np.array([x_new_init, y_new_init], dtype=float)
 simplex = initialize_simplex(X_new_init, delta=150.0)
 
 # -------------------------------------------------------------------
-# Nelder–Mead algorithm (returns best point and path)
+# Nelder–Mead algorithm (returns best point, value, path, iters, reached_max)
 # -------------------------------------------------------------------
 def Nelder_Mead(simplex, instance_path, penalized_function, lambd,
                 alpha=1.5, gamma=3.0, rho=0.5, sigma=0.5,
                 tol=1e-6, max_iter=100):
     iter_count = 0
-    path = []  # will store best (n+1)-th turbine positions per iteration
+
+    path = [simplex[0].copy()]  # will store best (n+1)-th turbine positions per iteration
 
     with open(results_file, "w", encoding="utf-8") as f:
         f.write("Iteration\tBest_penalized_EAP\tMove\tStdDev\n")
@@ -181,21 +182,44 @@ def Nelder_Mead(simplex, instance_path, penalized_function, lambd,
 
         iter_count += 1
 
-    # Return best vector + path
+    # Return best vector + path + iteration info
     func_vals = [penalized_function(x, instance_path, lambd) for x in simplex]
     best_index = np.argmin(func_vals)
-    return simplex[best_index], func_vals[best_index], path
+    reached_max_iter = (iter_count >= max_iter)
+    return simplex[best_index], func_vals[best_index], path, iter_count, reached_max_iter
 
 # -------------------------------------------------------------------
 # Run Nelder–Mead for turbine (n+1)
 # -------------------------------------------------------------------
-start_time=time.time()
-best_X_new, best_val, path = Nelder_Mead(
-    simplex, Instance, penalized_function_new_turbine, lambd=l
+alpha = 1.5
+gamma = 3.0
+rho = 0.5
+sigma = 0.5
+tol = 1e-6
+max_iter = 100
+
+# ---- Value at initial position (before Nelder–Mead) ----
+pen_init = penalized_function_new_turbine(X_new_init, Instance, lambd=l)
+print("\nInitial guess for turbine n+1:", X_new_init.tolist())
+print(f"Penalized objective at initial guess: {pen_init:.6f}")
+print(f"Corresponding EAP (approx): {-pen_init:.6f}") 
+start_time = time.time()
+best_X_new, best_val, path, n_iter, reached_max = Nelder_Mead(
+    simplex,
+    Instance,
+    penalized_function_new_turbine,
+    lambd=l,
+    alpha=alpha,
+    gamma=gamma,
+    rho=rho,
+    sigma=sigma,
+    tol=tol,
+    max_iter=max_iter
 )
-end_time=time.time()
-runtime=end_time-start_time
+end_time = time.time()
+runtime = end_time - start_time
 print(f"\nNelder Mead runtime: {runtime:.4f} seconds")
+
 # Build full best layout: [base layout, best_X_new]
 full_best_layout = np.concatenate([BASE_LAYOUT, best_X_new])
 
@@ -220,6 +244,23 @@ with open(results_file, "a", encoding="utf-8") as f:
     np.savetxt(f, np.array(best_X_new), fmt="%.6f")
     f.write("Full layout vector (including turbine n+1):\n")
     np.savetxt(f, full_best_layout, fmt="%.6f")
+
+# -------------------------------------------------------------------
+# Pretty summary "table" (like the gradient one)
+# -------------------------------------------------------------------
+start_pos = X_new_init.tolist()
+end_pos = best_X_new.tolist()
+
+print("\n" + "=" * 90)
+print(f"{'NELDER–MEAD SETTINGS':<40} {'TURBINE (n+1) & RUNTIME':<40}")
+print("-" * 90)
+print(f"{'Alpha (reflection)':<28} {alpha:<10.3f} {'Start [x, y]':<22} {start_pos}")
+print(f"{'Gamma (expansion)':<28} {gamma:<10.3f} {'Final [x, y]':<22} {end_pos}")
+print(f"{'Rho (contraction)':<28} {rho:<10.3f} {'Runtime (s)':<22} {runtime:.4f}")
+print(f"{'Sigma (shrink)':<28} {sigma:<10.3f} {'Iterations used':<22} {n_iter}")
+print(f"{'Tolerance':<28} {tol:<10.2e} {'Reached max_iter?':<22} {reached_max}")
+print(f"{'Max iterations':<28} {max_iter:<10d} {'Penalty λ':<22} {l:.3f}")
+print("=" * 90 + "\n")
 
 # -------------------------------------------------------------------
 # Prepare data for plotting

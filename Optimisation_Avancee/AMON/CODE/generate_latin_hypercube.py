@@ -9,11 +9,11 @@ from scipy.stats import qmc
 # --- Polygon vertices ---
 DATA_DIR = Path("/home/sarah-ali/M2---INUM/Optimisation_Avancee/AMON/data")
 SHP_FILE = DATA_DIR / "poly2.shp"   # <-- just change this file name
-N_instances = 10
-n_samples = 9
-margin = 0.0  # meters
-out_dir = "samples_LH_square_9_scipy"
-spacing=80.0
+N_instances = 1
+n_samples = 10
+margin = 200.0  # meters
+out_dir = "samples_LH_square_test"
+spacing=20.0
 
 # --- Read shapefile geometry using pyshp ---
 sf = shapefile.Reader(str(SHP_FILE))
@@ -23,8 +23,8 @@ print(f"{SHP_FILE.name} contains {len(sf.shapes())} shapes")
 shapes = sf.shapes()
 largest_shape = max(shapes, key=lambda s: Polygon(s.points).area)
 points = largest_shape.points
-xs = np.array([p[0] for p in points])
-ys = np.array([p[1] for p in points])
+xs = 1.2*np.array([p[0] for p in points])
+ys = 1.2*np.array([p[1] for p in points])
 
 # --- Compute bounding box and margin ---
 min_x, max_x = xs.min(), xs.max()

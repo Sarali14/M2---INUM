@@ -46,7 +46,7 @@ def gradient_EAP(instance_path, X, h,l):
         Ym[2*i+1] -=h
     
         # Evaluate EAP at perturbed positions
-        EAP_Xp,spacing_Xp,placing_Xp=windfarm_eval.windfarm_eval(instance_path, Xp.tolist())
+        EAP_Xp,spacing_Xp,placing_Xp = windfarm_eval.windfarm_eval(instance_path, Xp.tolist())
         EAP_Xm,spacing_Xm,placing_Xm = windfarm_eval.windfarm_eval(instance_path, Xm.tolist())
         EAP_Yp,spacing_Yp,placing_Yp = windfarm_eval.windfarm_eval(instance_path, Yp.tolist())
         EAP_Ym,spacing_Ym,placing_Ym = windfarm_eval.windfarm_eval(instance_path, Ym.tolist())

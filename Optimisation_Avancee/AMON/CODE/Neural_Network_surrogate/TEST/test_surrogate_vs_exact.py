@@ -1,11 +1,13 @@
 from pathlib import Path
 import sys, ast
 import numpy as np
-
+import os
 # --- Paths setup ---
 ROOT = Path("/home/sarah-ali/M2---INUM/Optimisation_Avancee/AMON")
 sys.path.insert(0, str(ROOT))
-sys.path.insert(0, str(ROOT / "CODE"))
+sys.path.insert(0, str(ROOT / "CODE/Neural_Network_surrogate"))
+
+os.chdir(ROOT)
 
 import windfarm_eval as windfarm
 import data as d
@@ -16,9 +18,22 @@ from penalized_surrogate import penalized_surrogate
 # ---- 1. Load instance ----
 instance_path = str(ROOT / "instances/2/param.txt")
 
+(nb_wt,
+ diameter,
+ hub_height,
+ scale_factor,
+ power_curve,
+ boundary_file,
+ exclusion_zone_file,
+ wind_speed,
+ wind_direction) = d.read_param_file(instance_path)
+
+# Penalty coefficient (keep same value as in penalized_surrogate.py)
+lambd = 10
+
 # ---- 2. Load your Latin Hypercube layout ----
 # Folder containing 1 file with 30 turbines (60 coords)
-lh_folder = ROOT / "CODE/samples_LH_1"
+lh_folder = ROOT / "CODE/samples_LH_square_test"
 lh_files = list(lh_folder.glob("*.txt"))
 assert len(lh_files) == 1, f"Expected 1 LH file, found {len(lh_files)}"
 
