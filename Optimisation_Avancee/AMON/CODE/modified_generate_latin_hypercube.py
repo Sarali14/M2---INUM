@@ -1,6 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from shapely.geometry import Polygon, box,shape
+from shapely.geometry import Polygon, box
 import os
 import shapefile
 from pathlib import Path
@@ -9,11 +9,16 @@ from scipy.stats import qmc
 # --- Polygon vertices ---
 DATA_DIR = Path("/home/sarah-ali/M2---INUM/Optimisation_Avancee/AMON/data")
 SHP_FILE = DATA_DIR / "poly2.shp"   # <-- just change this file name
+
 N_instances = 5000
-n_samples = 10
-margin = 200.0  # meters
-out_dir = "samples_LH_square_training_2"
-spacing=20.0
+
+# ---- NEW: choose min and max number of turbines per layout ----
+N_min = 10      # <-- set this as you want
+N_max = 40     # <-- set this as you want (must be >= N_min)
+
+margin = 100.0  # meters
+out_dir = "samples_LH_square_training_modified"
+spacing = 20.0  # (currently unused, kept for future constraints)
 
 # --- Read shapefile geometry using pyshp ---
 sf = shapefile.Reader(str(SHP_FILE))
@@ -23,8 +28,8 @@ print(f"{SHP_FILE.name} contains {len(sf.shapes())} shapes")
 shapes = sf.shapes()
 largest_shape = max(shapes, key=lambda s: Polygon(s.points).area)
 points = largest_shape.points
-xs = 1.2*np.array([p[0] for p in points])
-ys = 1.2*np.array([p[1] for p in points])
+xs = 1.2 * np.array([p[0] for p in points])
+ys = 1.2 * np.array([p[1] for p in points])
 
 # --- Compute bounding box and margin ---
 min_x, max_x = xs.min(), xs.max()
@@ -37,37 +42,34 @@ ymax = max_y + margin
 
 print(f"Bounding box :\n  x ∈ [{xmin:.1f}, {xmax:.1f}]\n  y ∈ [{ymin:.1f}, {ymax:.1f}]")
 
-# --- Latin Hypercube Sampling in 2D ---
-"""def lhs(n_samples, dim):
-    cut = np.linspace(0, 1, n_samples + 1)
-    u = np.random.rand(n_samples, dim)
-    a, b = cut[:-1], cut[1:]
-    points = a[:, None] + (b - a)[:, None] * u
-    for j in range(dim):
-        np.random.shuffle(points[:, j])
-    return points"""
-
-
 os.makedirs(out_dir, exist_ok=True)
 
+# --- Generate layouts ---
 for idx in range(N_instances):
+    # random number of turbines in [N_min, N_max]
+    n_turbines = np.random.randint(N_min, N_max + 1)
+
     sampler = qmc.LatinHypercube(d=2, optimization="random-cd")
-    lhs_unit = sampler.random(n=n_samples)  
+    lhs_unit = sampler.random(n=n_turbines)
+
     lhs_scaled = np.zeros_like(lhs_unit)
     lhs_scaled[:, 0] = xmin + (xmax - xmin) * lhs_unit[:, 0]
     lhs_scaled[:, 1] = ymin + (ymax - ymin) * lhs_unit[:, 1]
-    # Save as a Python list of [x, y] pairs, compatible with ast.literal_eval
 
+    # flatten [x1,y1,x2,y2,...] as before
     layout_flat = lhs_scaled.flatten().tolist()
     file_path = os.path.join(out_dir, f"Sample_LH_{idx:04d}.txt")
-    
+
     with open(file_path, "w") as f:
         f.write(repr(layout_flat))
 
-    print(f"Saved {file_path}")
+    print(f"Saved {file_path} with {n_turbines} turbines")
 
+
+"""
+# --- Optional: example plot using a layout with N_max turbines ---
 sampler = qmc.LatinHypercube(d=2, optimization="random-cd")
-lhs_unit = sampler.random(n=n_samples)
+lhs_unit = sampler.random(n=N_max)
 
 lhs_scaled = np.empty_like(lhs_unit)
 lhs_scaled[:, 0] = xmin + (xmax - xmin) * lhs_unit[:, 0]
@@ -85,8 +87,8 @@ plt.plot(x_poly, y_poly, color="blue", linewidth=2, label="Polygon")
 # Bounding box
 x_box, y_box = bbox.exterior.xy
 plt.plot(x_box, y_box, "k--", label="Bounding box")
-# LHS points
-plt.scatter(lhs_scaled[:, 0], lhs_scaled[:, 1], c="red", s=10, alpha=0.6, label="LHS samples (scipy)")
+# LHS points (example with N_max turbines)
+plt.scatter(lhs_scaled[:, 0], lhs_scaled[:, 1], s=10, alpha=0.6, label=f"LHS samples (N={N_max})")
 
 plt.xlabel("X (m)")
 plt.ylabel("Y (m)")
@@ -96,4 +98,4 @@ plt.axis("equal")
 plt.grid(True)
 plt.tight_layout()
 plt.show()
-
+"""

@@ -12,6 +12,7 @@ sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(ROOT / "CODE/Neural_Network_surrogate"))
 
 from penalized_surrogate import penalized_surrogate
+from surrogate_eap import predict_eap
 
 SHP_FILE = ROOT / "data/poly2.shp"
 Instance = str(ROOT / "instances/2/param.txt")
@@ -165,6 +166,8 @@ runtime = time.time() - start
 print(f"\nGradient descent runtime: {runtime:.4f} seconds")
 print("Optimized positions:", X_opt)
 
+eap_start = predict_eap(X_init_10)
+eap_opt   = predict_eap(X_opt)
 # save
 with open(ROOT/"CODE/optimized_position_NN.txt", "w") as f:
     json.dump(X_opt, f, indent=2)
@@ -187,6 +190,8 @@ print(f"{'Final alpha':<28} {alpha_final:<10.3f} {'Runtime (s)':<22} {runtime:.4
 print(f"{'Tolerance':<28} {tol:<10.2e} {'Iterations used':<22} {n_iter}")
 print(f"{'Max iterations':<28} {max_iter:<10d} {'Reached max_iter?':<22} {reached_max}")
 print(f"{'Penalty λ':<28} {l:<10.3f}")
+print(f"{'EAP at start (NN)':<28} {eap_start:<10.3f}")
+print(f"{'EAP at optimum (NN)':<28} {eap_opt:<10.3f}")
 print("="*90 + "\n")
 
 # plotting

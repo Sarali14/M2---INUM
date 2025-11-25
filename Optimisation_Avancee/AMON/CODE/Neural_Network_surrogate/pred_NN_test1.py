@@ -14,7 +14,7 @@ start_time=time.time()
 import windfarm_eval as windfarm
 
 Instances = str(ROOT / "instances/2/param.txt")
-coordinates_folder=Path.cwd() / "CODE/samples_LH_square_training"
+coordinates_folder=Path.cwd() / "CODE/samples_LH_square_training_2"
 
 all_instances = list(coordinates_folder.glob("*.txt"))
 random.shuffle(all_instances)
@@ -72,21 +72,25 @@ print("EAP range:", Y_eap.min().item(), "to", Y_eap.max().item())
 class myNet(nn.Module):
     def __init__(self,n):
         super(myNet,self).__init__()
-        self.fc1=nn.Linear(n,16)
-        self.fc2=nn.Linear(16,1)
+        self.fc1=nn.Linear(n,64)
+        self.fc2=nn.Linear(64,64)
+        self.fc3=nn.Linear(64,32)
+        self.out=nn.Linear(32,1)
 
     def forward(self,x):
         x=F.relu(self.fc1(x))
-        x=self.fc2(x)
+        x=F.relu(self.fc2(x))
+        x=F.relu(self.fc3(x))
+        
 
-        return x
+        return self.out(x)
 
 model=myNet(n_features)
 
 optimizer=optim.Adam(model.parameters(),lr=0.0001)
 loss_function=nn.MSELoss()
 
-epochs=700
+epochs=130
 
 X_train=X_norm[:train_instances]
 X_test=X_norm[train_instances:]
@@ -111,12 +115,12 @@ for epoch in range(1,epochs+1):
         Y_pred_test = model(X_test)
         Y_pred_test_MSE = loss_function(Y_pred_test, Y_test)
 
-    """train_error.append(Y_pred_train_MSE.item())
+    train_error.append(Y_pred_train_MSE.item())
     test_error.append(Y_pred_test_MSE.item())
     epochs_list.append(epoch)
 
     if epoch % 10 == 0:
-        print(f"Epoch {epoch}: train={Y_pred_train_MSE.item():.4f}, test={Y_pred_test_MSE.item():.4f}")"""
+        print(f"Epoch {epoch}: train={Y_pred_train_MSE.item():.4f}, test={Y_pred_test_MSE.item():.4f}")
 
 
 checkpoint = {

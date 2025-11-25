@@ -18,10 +18,10 @@ with open(file_bis, "r") as f:
 if len(eval_ter) != len(eval_bis):
     raise ValueError(f"Length mismatch: ter={len(eval_ter)}, bis={len(eval_bis)}")
 
-f1 = np.array(eval_ter, dtype=float)  # shape (N,)
-f2 = np.array(eval_bis, dtype=float)  # shape (N,)
+f_ter =1* np.array(eval_ter, dtype=float)  # shape (N,)
+f_bis =1* np.array(eval_bis, dtype=float)  # shape (N,)
 
-N = len(f1)
+N = len(f_ter)
 print(f"Loaded {N} points.")
 
 # --- Weighted-sum method over the discrete set ---
@@ -33,11 +33,11 @@ best_points = []   # (f1, f2, w, index)
 
 for w in weights:
     # Combined objective: F_w = w*f1 + (1-w)*f2
-    combined = w * f1 + (1.0 - w) * f2
+    combined = w * f_ter + (1.0 - w) * f_bis
     idx = np.argmin(combined)   # best layout index for this weight
     best_indices.append(idx)
-    best_points.append((f1[idx], f2[idx], w, idx))
-    print(f"w = {w:.2f} → best index = {idx}, f1 = {f1[idx]:.4f}, f2 = {f2[idx]:.4f}")
+    best_points.append((f_ter[idx], f_bis[idx], w, idx))
+    print(f"w = {w:.2f} → best index = {idx}, f_ter = {f_ter[idx]:.4f}, f_bis = {f_bis[idx]:.4f}")
 
 # --- Remove duplicates (same layout chosen for multiple weights) ---
 unique_by_index = {}
@@ -50,11 +50,11 @@ pareto_approx_indices = sorted(unique_by_index.keys())
 pareto_approx = np.array([unique_by_index[i][:2] for i in pareto_approx_indices])  # (M, 2)
 
 print(f"\nApproximate Pareto points found (unique layouts): {len(pareto_approx_indices)}")
-
+print(pareto_approx)
 plt.figure(figsize=(8, 6))
 
 # All points
-plt.scatter(f1,f2, s=15, alpha=0.3, color='black',label="f1 and f2  evaluated layouts")
+plt.scatter(f_ter,f_bis, s=15, alpha=0.3, color='black',label="f_ter and f_bis  evaluated layouts")
 
 # Weighted-sum approximate front (unique points)
 if len(pareto_approx) > 0:

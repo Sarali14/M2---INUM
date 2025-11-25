@@ -16,6 +16,7 @@ sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(ROOT / "CODE"))
 sys.path.insert(0, str(ROOT / "CODE/Neural_Network_surrogate"))
 from penalized_surrogate import penalized_surrogate 
+from surrogate_eap import predict_eap
 
 Instance = str(ROOT / "instances/2/param.txt")
 X0_filz = str(ROOT / "CODE/samples_LH_square_9_scipy/Sample_LH_0000.txt")
@@ -201,6 +202,11 @@ print(f"\nNelder Mead runtime: {runtime:.4f} seconds")
 # Build full best layout: [base layout, best_X_new]
 full_best_layout = np.concatenate([BASE_LAYOUT, best_X_new])
 
+full_init_layout = np.concatenate([BASE_LAYOUT, X_new_init])
+
+eap_start = predict_eap(full_init_layout.tolist())
+eap_opt   = predict_eap(full_best_layout.tolist())
+
 print("=== Nelder-Mead Optimization Finished ===")
 print(f"Best position for turbine n+1 (turbine {n_turbines + 1}): [x, y]")
 print(best_X_new)
@@ -238,6 +244,8 @@ print(f"{'Rho (contraction)':<28} {rho:<10.3f} {'Runtime (s)':<22} {runtime:.4f}
 print(f"{'Sigma (shrink)':<28} {sigma:<10.3f} {'Iterations used':<22} {n_iter}")
 print(f"{'Tolerance':<28} {tol:<10.2e} {'Reached max_iter?':<22} {reached_max}")
 print(f"{'Max iterations':<28} {max_iter:<10d} {'Penalty λ':<22} {l:.3f}")
+print(f"{'EAP at start (NN)':<28} {eap_start:<10.3f}")
+print(f"{'EAP at optimum (NN)':<28} {eap_opt:<10.3f}")
 print("=" * 90 + "\n")
 
 # -------------------------------------------------------------------

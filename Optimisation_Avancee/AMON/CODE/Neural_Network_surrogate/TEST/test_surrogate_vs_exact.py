@@ -13,8 +13,8 @@ import windfarm_eval as windfarm
 import data as d
 import windfarm_setting as wf
 from constraints import buildable_zone
-from penalized_surrogate import penalized_surrogate
-
+#from penalized_surrogate import penalized_surrogate
+from modified_penalized_surrogate import penalized_surrogate
 # ---- 1. Load instance ----
 instance_path = str(ROOT / "instances/2/param.txt")
 

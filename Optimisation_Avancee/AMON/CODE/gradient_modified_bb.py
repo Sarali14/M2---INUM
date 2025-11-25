@@ -217,6 +217,8 @@ with open(out_path, "w") as f:
 
 print(f"\nSaved evaluations to {out_path}")
 
+EAP_start, spacing_start, placing_start = windfarm_eval.windfarm_eval(Instance, X_init_10)
+EAP_opt, spacing_opt, placing_opt = windfarm_eval.windfarm_eval(Instance, X_opt)
 # ---- Neat summary "table" ----
 start_pos_10 = [x10_init, y10_init]
 final_pos_10 = X_opt[2 * tenth_index: 2 * tenth_index + 2]
@@ -231,6 +233,8 @@ print(f"{'Tolerance':<28} {tol:<10.2e} {'Runtime (s)':<22} {runtime:.4f}")
 print(f"{'Max iterations':<28} {max_iter:<10d} {'Iterations used':<22} {n_iter}")
 print(f"{'Penalty coefficient λ':<28} {l:<10.3f}")
 print(f"{'Reached max_iter?':<28} {str(reached_max_iter):<10}")
+print(f"{'EAP at start (BB)':<28} {EAP_start:<10.3f}")
+print(f"{'EAP at optimum (BB)':<28} {EAP_opt:<10.3f}")
 print("=" * 90 + "\n")
 
 # --- Prepare coordinates for plotting ---

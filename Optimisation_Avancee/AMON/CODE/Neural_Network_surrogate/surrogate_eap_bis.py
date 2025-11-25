@@ -16,13 +16,16 @@ import constraints as cst
 class MyNet(nn.Module):
     def __init__(self, n):
         super(MyNet, self).__init__()
-        self.fc1 = nn.Linear(n, 16)
-        self.fc2 = nn.Linear(16, 1)
+        self.fc1 = nn.Linear(n, 64)
+        self.fc2 = nn.Linear(64, 64)
+        self.fc3 = nn.Linear(64,32)
+        self.out = nn.Linear(32,1)
 
     def forward(self, x):
         x = F.relu(self.fc1(x))
-        x = self.fc2(x)
-        return x
+        x = F.relu(self.fc2(x))
+        x = F.relu(self.fc3(x))
+        return self.out(x)
 
 # ---- Load checkpoint once at import time ----
 _checkpoint = torch.load(CKPT_PATH, map_location="cpu")

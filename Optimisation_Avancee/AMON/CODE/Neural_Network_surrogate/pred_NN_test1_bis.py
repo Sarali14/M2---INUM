@@ -13,7 +13,7 @@ sys.path.insert(0, str(ROOT))
 import windfarm_eval as windfarm
 
 Instances = str(ROOT / "instances/2/param_bis.txt")
-coordinates_folder=Path.cwd() / "CODE/samples_LH_square_training"
+coordinates_folder=Path.cwd() / "CODE/samples_LH_square_training_2"
 
 all_instances = list(coordinates_folder.glob("*.txt"))
 random.shuffle(all_instances)
@@ -71,21 +71,25 @@ print("EAP range:", Y_eap.min().item(), "to", Y_eap.max().item())
 class myNet(nn.Module):
     def __init__(self,n):
         super(myNet,self).__init__()
-        self.fc1=nn.Linear(n,16)
-        self.fc2=nn.Linear(16,1)
+        self.fc1=nn.Linear(n,64)
+        self.fc2=nn.Linear(64,64)
+        self.fc3=nn.Linear(64,32)
+        self.out=nn.Linear(32,1)
 
     def forward(self,x):
         x=F.relu(self.fc1(x))
-        x=self.fc2(x)
+        x=F.relu(self.fc2(x))
+        x=F.relu(self.fc3(x))
+        
+        return self.out(x)
 
-        return x
 
 model=myNet(n_features)
 
 optimizer=optim.Adam(model.parameters(),lr=0.0001)
 loss_function=nn.MSELoss()
 
-epochs=700
+epochs=130
 
 X_train=X_norm[:train_instances]
 X_test=X_norm[train_instances:]

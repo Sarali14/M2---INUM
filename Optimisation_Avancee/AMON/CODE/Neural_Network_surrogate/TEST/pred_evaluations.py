@@ -10,7 +10,7 @@ ROOT = Path("/home/sarah-ali/M2---INUM/Optimisation_Avancee/AMON")
 sys.path.insert(0, str(ROOT))
 
 # --- Initialize surrogate ---
-instance_path = str(ROOT / "instances/2/param.txt")
+instance_path = str(ROOT / "instances/2/param_ter.txt")
 
 # --- Folder with layouts ---
 coordinates_folder = ROOT / "CODE/samples_LH_square_FP"

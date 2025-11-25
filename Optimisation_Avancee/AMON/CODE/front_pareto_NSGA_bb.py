@@ -10,12 +10,15 @@ import ast  # to read [x, y] from txt
 # ---------------------------------------------------
 # Paths / imports
 # ---------------------------------------------------
-ROOT = Path("/home/sarah-ali/M2---INUM/Optimisation_Avancee/AMON/CODE/Neural_Network_surrogate")
+ROOT = Path("/home/sarah-ali/M2---INUM/Optimisation_Avancee/AMON")
 sys.path.insert(0, str(ROOT))
 
-from penalized_surrogate_ter import penalized_surrogate_ter
-from penalized_surrogate_bis import penalized_surrogate_bis
+Instances_ter = str(ROOT / "instances/2/param_ter.txt")
+Instances_bis = str(ROOT / "instances/2/param_bis.txt")
 
+#from penalized_surrogate_ter import penalized_surrogate_ter
+#from penalized_surrogate_bis import penalized_surrogate_bis
+import windfarm_eval as windfarm
 # 🔁 CHANGE THIS: base layout with 9 turbines [x0,y0,...,x8,y8]
 BASE_LAYOUT_FILE = Path("/home/sarah-ali/M2---INUM/Optimisation_Avancee/AMON/CODE/samples_LH_square_9_scipy/Sample_LH_0000.txt")
 
@@ -84,8 +87,11 @@ class WindFarmProblem(Problem):
         for x_last in X:      # x_last = [x10, y10]
             layout = build_full_layout(x_last)   # full 20D vector
 
-            f1 = penalized_surrogate_ter(layout)
-            f2 = penalized_surrogate_bis(layout)
+            eap_ter,spacing,placing = windfarm.windfarm_eval(Instances_ter,layout.tolist())
+            eap_bis,spacing,placing = windfarm.windfarm_eval(Instances_bis,layout.tolist())
+
+            f1= -eap_ter+ 10*(spacing+placing)
+            f2= -eap_bis+ 10*(spacing+placing)
 
             F1.append(f1)
             F2.append(f2)
@@ -176,4 +182,3 @@ plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left', fontsize=7)
 plt.subplots_adjust(right=0.75)   # give space to legend
 plt.tight_layout()
 plt.show()
-

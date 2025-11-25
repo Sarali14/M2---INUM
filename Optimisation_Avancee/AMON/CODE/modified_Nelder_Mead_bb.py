@@ -201,8 +201,8 @@ max_iter = 100
 # ---- Value at initial position (before Nelder–Mead) ----
 pen_init = penalized_function_new_turbine(X_new_init, Instance, lambd=l)
 print("\nInitial guess for turbine n+1:", X_new_init.tolist())
-print(f"Penalized objective at initial guess: {pen_init:.6f}")
-print(f"Corresponding EAP (approx): {-pen_init:.6f}") 
+print(f"Penalized objective at initial guess: {pen_init:.6f}  "
+      f"(= -EAP + λ(spacing+placing))") 
 start_time = time.time()
 best_X_new, best_val, path, n_iter, reached_max = Nelder_Mead(
     simplex,
@@ -229,6 +229,16 @@ print(best_X_new)
 print("\nMaximized penalized EAP:")
 print(-best_val)
 
+full_init_layout = np.concatenate([BASE_LAYOUT, X_new_init])
+EAP_start, spacing_start, placing_start = windfarm_eval.windfarm_eval(
+    Instance, full_init_layout.tolist()
+)
+EAP_opt, spacing_opt, placing_opt = windfarm_eval.windfarm_eval(
+    Instance, full_best_layout.tolist()
+)
+
+print(f"\nTrue EAP at initial guess: {EAP_start:.6f}")
+print(f"True EAP at optimum     : {EAP_opt:.6f}")
 # -------------------------------------------------------------------
 # Save final full layout as [x, y, x, y, ...] in a .txt file
 # -------------------------------------------------------------------
@@ -260,6 +270,8 @@ print(f"{'Rho (contraction)':<28} {rho:<10.3f} {'Runtime (s)':<22} {runtime:.4f}
 print(f"{'Sigma (shrink)':<28} {sigma:<10.3f} {'Iterations used':<22} {n_iter}")
 print(f"{'Tolerance':<28} {tol:<10.2e} {'Reached max_iter?':<22} {reached_max}")
 print(f"{'Max iterations':<28} {max_iter:<10d} {'Penalty λ':<22} {l:.3f}")
+print(f"{'EAP at start (BB)':<28} {EAP_start:<10.3f}")
+print(f"{'EAP at optimum (BB)':<28} {EAP_opt:<10.3f}")
 print("=" * 90 + "\n")
 
 # -------------------------------------------------------------------
