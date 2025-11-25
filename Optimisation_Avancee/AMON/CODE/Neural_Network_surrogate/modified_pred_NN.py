@@ -26,7 +26,7 @@ random.shuffle(all_instances)
 print("Total layouts found:", len(all_instances))
 
 # ---- LIMIT FOR DEBUG ----
-MAX_SAMPLES = len(all_instances)   # choose 100, 200, 300... whatever you want
+MAX_SAMPLES = 1000 #len(all_instances)   # choose 100, 200, 300... whatever you want
 all_instances = all_instances[:MAX_SAMPLES]
 
 print("Using only", len(all_instances), "layouts for this run")
