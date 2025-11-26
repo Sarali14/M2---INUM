@@ -9,10 +9,10 @@ from scipy.stats import qmc
 # --- Polygon vertices ---
 DATA_DIR = Path("/home/sarah-ali/M2---INUM/Optimisation_Avancee/AMON/data")
 SHP_FILE = DATA_DIR / "poly2.shp"   # <-- just change this file name
-N_instances = 5000
-n_samples = 10
-margin = 200.0  # meters
-out_dir = "samples_LH_square_training_2"
+N_instances = 1
+n_samples = 30
+margin = 100.0  # meters
+out_dir = "samples_LH_square_test_30_NM"
 spacing=20.0
 
 # --- Read shapefile geometry using pyshp ---

@@ -19,7 +19,7 @@ from penalized_surrogate import penalized_surrogate
 from surrogate_eap import predict_eap
 
 Instance = str(ROOT / "instances/2/param.txt")
-X0_filz = str(ROOT / "CODE/samples_LH_square_9_scipy/Sample_LH_0000.txt")
+X0_filz = str(ROOT / "CODE/samples_LH_square_9_scipy/Sample_LH_0003.txt")
 SHP_FILE = ROOT / "data/poly2.shp"
 results_file = ROOT / "instances/2/nelder_mead_log_NN.txt"
 out_path = ROOT / "CODE/optimized_nelder_mead_NN.txt"
@@ -73,8 +73,8 @@ l = 10.0  # penalty parameter
 # -------------------------------------------------------------------
 # Initial guess for turbine n+1
 # -------------------------------------------------------------------
-x_new_init = 1050.0     # your manual guess
-y_new_init = 150.0    # your manual guess
+x_new_init = -550.0     # your manual guess
+y_new_init = 250.0    # your manual guess
 
 X_new_init = np.array([x_new_init, y_new_init], dtype=float)
 

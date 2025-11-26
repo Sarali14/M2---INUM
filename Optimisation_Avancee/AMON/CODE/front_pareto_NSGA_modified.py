@@ -31,9 +31,6 @@ for fpath in parent_files:
         content = f.read().strip()
         layout = np.array(ast.literal_eval(content), dtype=float)
 
-    if layout.size != 20:
-        raise ValueError(f"Layout in {fpath} does not have 20 numbers (10 turbines).")
-
     initial_X.append(layout)
 
 initial_X = np.array(initial_X)
@@ -67,7 +64,10 @@ class WindFarmProblem(Problem):
             F1.append(f1)
             F2.append(f2)
 
-        out["F"] = np.column_stack([F1, F2])
+        out["F"] = np.column_stack([
+            np.array(F1) / 1000,
+            np.array(F2) / 1000
+        ])
 
 
 problem = WindFarmProblem()
