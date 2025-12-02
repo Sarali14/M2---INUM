@@ -1,0 +1,3 @@
+[submodule "HPC/hpc"]
+	path = HPC/hpc
+	url = https://github.com/sabide/hpc.git
