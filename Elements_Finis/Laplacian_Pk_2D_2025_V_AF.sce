@@ -17,16 +17,15 @@ endfunction
 // =============================================================
 
  //--------------------------------
-function [Conv, Reac, Diff] = Composite_Mat(Xg, pb, Lx, Ly, Ne, i, mExp)
+function [Conv, Reac, Diff] = Composite_Mat(Xg, pb, Lx, Ly, Ne,i, mExp)
 
     // -------- defaults (optional args) ----------
     // allowed calls:
     //   Composite_Mat(Xg, pb, Lx, Ly, Ne)
     //   Composite_Mat(Xg, pb, Lx, Ly, Ne, i)
     //   Composite_Mat(Xg, pb, Lx, Ly, Ne, i, mExp)
-
-    if argn(2) < 6 then
-        i = 0;          // by default: no h-scaling trick
+    if argn (2) < 6 then
+        i = 0; // by default 
     end
     if argn(2) < 7 then
         mExp = 1;       // default exponent for dh^m
@@ -70,10 +69,10 @@ function [Conv, Reac, Diff] = Composite_Mat(Xg, pb, Lx, Ly, Ne, i, mExp)
         Reac = 0.0;
 
         if i == 1 then
-            dh = sqrt(Lx*Ly/Ne);
-            Diff = diag([dh^mExp; dh^mExp]);
+            dh = sqrt ( Lx * Ly / Ne ) ;
+            Diff = diag ([ dh ^ mExp ; dh ^ mExp ]) ;
         else
-            Diff = diag([0.0; 0.0]);
+            Diff = diag ([0.0; 0.0]) ;
         end
 
     case 7 then
@@ -518,14 +517,14 @@ Ngi                 = 60;
 //   EF_Pk = 2 <===> P2-Lagrange
 //   EF_Pk = 3 <===> P3-Lagrange
 //=========================================================
-EF_Pk     = 1;
+EF_Pk     = 3;
 
 // définition des paramètres du maillage.
 // ---------------------------------------
 
 i = 1;
-mExp = 3 // ou 2 ou 3
-pb = 7; // pb reaction : 1 // pb diff iso : 2 // pb diff anis 3(betx=1,bety=2),4(betx=1,bety=0),5(betx=1e-8,bety=1.0)// pb conv : 6 (i=0 -> betx=bety=0 i=1 -> convergence % dhm)
+mExp = 2; // ou 2 ou 3
+pb = 6; // pb reaction : 1 // pb diff iso : 2 // pb diff anis 3(betx=1,bety=2),4(betx=1,bety=0),5(betx=1e-8,bety=1.0)// pb conv : 6 (i=0 -> betx=bety=0 i=1 -> convergence % dhm)
 // pb conv-reac-diff anis 2D : 7 
 Lx  =1   ; Ly=1 
 Nx0 =10  ; Ny0=10
@@ -597,7 +596,7 @@ for rf = 1:Nconv
             + Lambda(3,gp)*Xk ;
             wg  = W(gp);
 
-            [Coef_Lm, Coef_Reac, Coef_Mu] = Composite_Mat(Xg,pb,Lx,Ly, Ne); //pour le test de convergence pour le pb de convection, il faut ajouter les arg i et mExp 
+            [Coef_Lm, Coef_Reac, Coef_Mu] = Composite_Mat(Xg,pb,Lx,Ly, Ne,i,mExp); //pour le test de convergence pour le pb de convection, il faut ajouter les arg i et mExp 
             bx = Coef_Mu(1,1);
             by = Coef_Mu(2,2);
             cx = Coef_Lm(1);
@@ -650,9 +649,8 @@ for rf = 1:Nconv
                     //      -------------------------
                     // A COMPLETER si besoin: le calcul de Ae_k_kp  !!
                     // -------------------------------------------------
-                    Ae_k_kp    = (GradPhi_is * Coef_Mu * GradPhi_js') ...
-                                    + Coef_Reac * Phi_is * Phi_js ...
-                                    - Phi_is * (Coef_Lm' * GradPhi_js');
+                    Ae_k_kp    = ( GradPhi_is* Coef_Mu * GradPhi_js')                                                   + Coef_Reac * Phi_is * Phi_js                                                         - Phi_js * (Coef_Lm' * GradPhi_is');
+                            
 
                     // ---------------------------------
                     // Assemblage de la matrice globale (is, js)
