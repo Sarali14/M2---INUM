@@ -1,4 +1,7 @@
-clear
+if ~exists("RUN_SIMULATION","local") then
+    clear;
+end
+
 clf
 
 //---------------
@@ -300,11 +303,7 @@ endfunction
 
           
       else
-          printf("!!!!!!!! function Phi = Phi_Pk(lmd1, lmd2, pk) \n");             printf("!!!!!!!!-------------------------------!!!!!!!\n");
-          printf("!!!!!!!! A FAIRE !!!A FAIRE !!!A FAIRE !!!!!!!\n"); 
-          printf("! Les Fonctions de Base Pk : k= %d   !\n", pk);
-          printf("!!!!!!!!-------------------------------!!!!!!!\n"); 
-          abort
+            printf("please choose either P1,P2 or P3"); 
 
     end
 endfunction
@@ -354,13 +353,7 @@ function GradPhi = GradPhi_Pk(lmd1, lmd2, G1, G2, pk)
 
         
     else
-        printf("!!!!!!!!-------------------------------!!!!!!!\n");
-        printf(" function GradPhi                          ...\n");
-        printf("         = GradPhi_Pk(lmd1, lmd2, G1, G2, pk)!\n");
-        printf("!!!!!!!! A FAIRE !!!A FAIRE !!!A FAIRE !!!!!!!\n"); 
-        printf("! Gradient des Fonctions de Base pour pk= %d !\n",pk);
-        printf("!!!!!!!!-------------------------------!!!!!!!\n"); 
-        abort
+        printf("please choose either P1,P2 or P3");
     end
 endfunction
 //-----------------------------------------
@@ -517,15 +510,54 @@ Ngi                 = 60;
 //   EF_Pk = 2 <===> P2-Lagrange
 //   EF_Pk = 3 <===> P3-Lagrange
 //=========================================================
-EF_Pk     = 3;
+// ============================================
+// Interactive start — stop execution first
+// ============================================
+if ~exists("RUN_SIMULATION","local") then
+    mprintf("\n")    
+    disp("=======================================");
+    disp(" FEM 2D solver");
+    disp(" Choose parameters, then run again");
+    disp("=======================================\n");
 
-// définition des paramètres du maillage.
-// ---------------------------------------
+    mprintf("Choose pb:\n");
+    mprintf("  1: reaction (alpha=1)\n");
+    mprintf("  2: diffusion iso (4,4)\n");
+    mprintf("  3: diffusion anis (1,2)\n");
+    mprintf("  4: diffusion anis (1,0)\n");
+    mprintf("  5: diffusion anis (1e-8,1)\n");
+    mprintf("  6: convection (0.5,1) + optional stabilization dh^m\n");
+    mprintf("  7: conv-reac-diff anis\n\n");
+    pb = input("pb = ");
 
-i = 1;
-mExp = 2; // ou 2 ou 3
-pb = 6; // pb reaction : 1 // pb diff iso : 2 // pb diff anis 3(betx=1,bety=2),4(betx=1,bety=0),5(betx=1e-8,bety=1.0)// pb conv : 6 (i=0 -> betx=bety=0 i=1 -> convergence % dhm)
-// pb conv-reac-diff anis 2D : 7 
+    mprintf("\nChoose FE order:\n");
+    mprintf("  1: P1\n  2: P2\n  3: P3\n\n");
+    EF_Pk = input("EF_Pk = ");
+
+    i    = 0;
+    mExp = 1;
+
+    if pb == 6 then
+        mprintf("\nStabilization for convection problem:\n");
+        mprintf("  0 : No stabilization (Diff = 0)\n");
+        mprintf("  1 : Yes (Diff = diag(dh^m, dh^m))\n\n");
+    
+        i = input("Choose i (0 or 1): ");
+    
+        if i == 1 then
+            mExp = input("Enter exponent m in dh^m (e.g. 1, 2, 3): ");
+        else
+            mExp = 1;   // default value, not used
+        end
+    end
+
+    // Store choices
+    RUN_SIMULATION = %t;
+
+    mprintf("\nChosen parameters: pb=%d, EF_Pk=%d, i=%d, mExp=%g\n", pb, EF_Pk, i, mExp);
+    mprintf("Now run the script again to start computation.\n\n");
+    return;
+end
 Lx  =1   ; Ly=1 
 Nx0 =10  ; Ny0=10
 
@@ -649,9 +681,8 @@ for rf = 1:Nconv
                     //      -------------------------
                     // A COMPLETER si besoin: le calcul de Ae_k_kp  !!
                     // -------------------------------------------------
-                    Ae_k_kp    = ( GradPhi_is* Coef_Mu * GradPhi_js')                                                   + Coef_Reac * Phi_is * Phi_js                                                         - Phi_js * (Coef_Lm' * GradPhi_is');
+                    Ae_k_kp    = ( GradPhi_is* Coef_Mu * GradPhi_js')                                                                                                   + Coef_Reac * Phi_is * Phi_js                                                                                                       - Phi_js * (Coef_Lm' * GradPhi_is');
                             
-
                     // ---------------------------------
                     // Assemblage de la matrice globale (is, js)
                     // ----------------------------------
