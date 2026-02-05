@@ -1,0 +1,52 @@
+import numpy as np
+import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
+
+def u0(x):
+    u=0
+    if x>0.25:
+        u=1
+    return u
+
+def s1(N,M,a,tf,xf,u):
+    t=0
+    x=0
+    dt=tf/N
+    dx=xf/M
+    x=np.linspace(0,xf,M)
+    t=np.linspace(0,tf,N)
+    U=np.zeros((N,M))
+    U[0,:]=u(x)
+    c=dt/dx
+    for n in range(N):
+        for i in range(M):
+            U[n+1,i]=U[n,i]-a*c*(U[n,i+1]-U[n,i])
+    return U,x,t
+
+xf=1.0
+tf=2.0
+
+a=1/4
+
+N=20
+M=20
+
+U,x,t = s1(N,M,a,tf,xf,u0)
+
+X, T = np.meshgrid(x, t)
+
+fig = plt.figure(figsize=(8,5))
+ax = fig.add_subplot(111, projection='3d')
+
+ax.plot_surface(X, T, U, cmap='viridis')
+ax.set_xlabel("x")
+ax.set_ylabel("t")
+ax.set_zlabel("u")
+ax.set_title("Surface espace–temps")
+
+plt.show()
+
+
+            
+    
+    

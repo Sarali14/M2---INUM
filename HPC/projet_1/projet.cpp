@@ -51,8 +51,7 @@ int main(int argc,char *argv[]) {
   }
 
   int other = 1 - rank;
-  
-
+ 
   double f2_local = f.squaredNorm();
   double f2_other = 0.0;
 
